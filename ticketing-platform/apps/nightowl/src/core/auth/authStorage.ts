@@ -4,6 +4,22 @@ import type { LoginResponse } from '../../features/auth/types';
 
 const SESSION_STORAGE_KEY = 'nightowl.session';
 
+function isSessionLike(value: unknown): value is LoginResponse {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+
+  const candidate = value as Partial<LoginResponse>;
+  return (
+    typeof candidate.accessToken === 'string' &&
+    typeof candidate.refreshToken === 'string' &&
+    Boolean(candidate.user) &&
+    typeof candidate.user?.id === 'string' &&
+    typeof candidate.user?.email === 'string' &&
+    Array.isArray(candidate.user?.roles)
+  );
+}
+
 export async function readStoredSession(): Promise<LoginResponse | null> {
   try {
     const rawSession = await SecureStore.getItemAsync(SESSION_STORAGE_KEY);
@@ -12,7 +28,13 @@ export async function readStoredSession(): Promise<LoginResponse | null> {
       return null;
     }
 
-    return JSON.parse(rawSession) as LoginResponse;
+    const parsedSession = JSON.parse(rawSession) as unknown;
+    if (!isSessionLike(parsedSession)) {
+      await SecureStore.deleteItemAsync(SESSION_STORAGE_KEY);
+      return null;
+    }
+
+    return parsedSession;
   } catch {
     await SecureStore.deleteItemAsync(SESSION_STORAGE_KEY);
     return null;

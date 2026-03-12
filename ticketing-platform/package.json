@@ -8,6 +8,7 @@
     "dev": "pnpm build && turbo run dev --parallel",
     "typecheck": "turbo run typecheck",
     "lint": "turbo run lint",
+    "test": "turbo run test",
     "migrate": "pnpm --filter @ticketing/db migrate"
   },
   "devDependencies": {

@@ -1,2 +1,1 @@
-export const API_BASE_URL =
-  process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:4000/v1";
+export { API_BASE_URL, API_MAX_RETRIES, API_REQUEST_TIMEOUT_MS } from '../config/appConfig';

@@ -1,13 +1,4 @@
-function readPublicEnv(name: string) {
-  const rawValue = process.env[name];
-
-  if (!rawValue) {
-    return undefined;
-  }
-
-  const value = rawValue.trim();
-  return value.length ? value : undefined;
-}
+import { readPublicEnv } from '../config/publicEnv';
 
 export const STRIPE_PUBLISHABLE_KEY = readPublicEnv('EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY');
 export const STRIPE_MERCHANT_DISPLAY_NAME =
