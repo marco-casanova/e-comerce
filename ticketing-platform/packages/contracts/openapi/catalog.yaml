@@ -1,0 +1,14 @@
+openapi: 3.0.3
+info:
+  title: Catalog Service API
+  version: 0.1.0
+paths:
+  /events:
+    get:
+      summary: List events
+  /events/{id}:
+    get:
+      summary: Event detail
+  /admin/events:
+    post:
+      summary: Create event

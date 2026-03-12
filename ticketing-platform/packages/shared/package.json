@@ -1,0 +1,22 @@
+{
+  "name": "@ticketing/shared",
+  "version": "0.1.0",
+  "private": true,
+  "main": "dist/index.js",
+  "types": "src/index.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "dev": "tsc -w -p tsconfig.json"
+  },
+  "dependencies": {
+    "@ticketing/authz": "workspace:*",
+    "fastify": "^5.2.1",
+    "jsonwebtoken": "^9.0.2",
+    "pino": "^9.6.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/jsonwebtoken": "^9.0.9"
+  }
+}

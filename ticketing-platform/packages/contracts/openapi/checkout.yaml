@@ -1,0 +1,11 @@
+openapi: 3.0.3
+info:
+  title: Checkout Service API
+  version: 0.1.0
+paths:
+  /checkout/payment-intent:
+    post:
+      summary: Create Stripe payment intent
+  /checkout/webhook:
+    post:
+      summary: Stripe webhook callback

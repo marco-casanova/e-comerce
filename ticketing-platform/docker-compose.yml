@@ -1,0 +1,173 @@
+name: ticketing-platform
+
+x-service-common: &service-common
+  build:
+    context: .
+    dockerfile: docker/dev.Dockerfile
+  image: ticketing-platform-dev
+  working_dir: /workspace
+  volumes:
+    - ./:/workspace
+  environment:
+    DATABASE_URL: postgres://postgres:postgres@postgres:5432/ticketing
+    REDIS_URL: redis://redis:6379
+    JWT_SECRET: ${JWT_SECRET:-change-me-in-env-file}
+    LOG_LEVEL: ${LOG_LEVEL:-info}
+  depends_on:
+    postgres:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ticketing
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - '5433:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d ticketing']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  api-gateway:
+    <<: *service-common
+    profiles: ['services']
+    command: sh -lc "pnpm --filter @ticketing/api-gateway... build && pnpm --filter @ticketing/api-gateway dev"
+    environment:
+      AUTH_URL: http://auth:4001
+      CATALOG_URL: http://catalog:4002
+      CART_URL: http://cart:4003
+      ORDERS_URL: http://orders:4004
+      CHECKOUT_URL: http://checkout:4005
+      TICKETS_URL: http://tickets:4006
+      ADMIN_URL: http://admin:4007
+      INCIDENTS_URL: http://incidents:4008
+      ANALYTICS_URL: http://analytics:4009
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-env-file}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    ports:
+      - '4000:4000'
+    depends_on:
+      auth:
+        condition: service_started
+      catalog:
+        condition: service_started
+      cart:
+        condition: service_started
+      orders:
+        condition: service_started
+      checkout:
+        condition: service_started
+      tickets:
+        condition: service_started
+      admin:
+        condition: service_started
+      incidents:
+        condition: service_started
+      analytics:
+        condition: service_started
+
+  auth:
+    <<: *service-common
+    profiles: ['services']
+    command: sh -lc "pnpm --filter @ticketing/auth... build && pnpm --filter @ticketing/auth dev"
+    ports:
+      - '4001:4001'
+
+  catalog:
+    <<: *service-common
+    profiles: ['services']
+    command: sh -lc "pnpm --filter @ticketing/catalog... build && pnpm --filter @ticketing/catalog dev"
+    ports:
+      - '4002:4002'
+
+  cart:
+    <<: *service-common
+    profiles: ['services']
+    command: sh -lc "pnpm --filter @ticketing/cart... build && pnpm --filter @ticketing/cart dev"
+    ports:
+      - '4003:4003'
+
+  orders:
+    <<: *service-common
+    profiles: ['services']
+    command: sh -lc "pnpm --filter @ticketing/orders... build && pnpm --filter @ticketing/orders dev"
+    ports:
+      - '4004:4004'
+
+  checkout:
+    <<: *service-common
+    profiles: ['services']
+    command: sh -lc "pnpm --filter @ticketing/checkout... build && pnpm --filter @ticketing/checkout dev"
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/ticketing
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-env-file}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-sk_test_change_me}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-whsec_change_me}
+    ports:
+      - '4005:4005'
+
+  tickets:
+    <<: *service-common
+    profiles: ['services']
+    command: sh -lc "pnpm --filter @ticketing/tickets... build && pnpm --filter @ticketing/tickets dev"
+    ports:
+      - '4006:4006'
+
+  admin:
+    <<: *service-common
+    profiles: ['services']
+    command: sh -lc "pnpm --filter @ticketing/admin... build && pnpm --filter @ticketing/admin dev"
+    ports:
+      - '4007:4007'
+
+  incidents:
+    <<: *service-common
+    profiles: ['services']
+    command: sh -lc "pnpm --filter @ticketing/incidents... build && pnpm --filter @ticketing/incidents dev"
+    ports:
+      - '4008:4008'
+
+  analytics:
+    <<: *service-common
+    profiles: ['services']
+    command: sh -lc "pnpm --filter @ticketing/analytics... build && pnpm --filter @ticketing/analytics dev"
+    ports:
+      - '4009:4009'
+
+  notifications:
+    <<: *service-common
+    profiles: ['services']
+    command: sh -lc "pnpm --filter @ticketing/notifications... build && pnpm --filter @ticketing/notifications dev"
+    environment:
+      REDIS_URL: redis://redis:6379
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    ports:
+      - '4010:4010'
+
+volumes:
+  postgres_data:
+  redis_data:

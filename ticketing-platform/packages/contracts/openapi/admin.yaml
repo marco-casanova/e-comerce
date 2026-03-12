@@ -1,0 +1,16 @@
+openapi: 3.0.3
+info:
+  title: Admin Service API
+  version: 0.1.0
+paths:
+  /admin/events/{eventId}/metrics:
+    get:
+      summary: Event metrics
+  /admin/events/{eventId}/funnel:
+    get:
+      summary: Funnel metrics
+  /admin/events/{eventId}/ops-status:
+    get:
+      summary: Get event ops status
+    patch:
+      summary: Update event ops status

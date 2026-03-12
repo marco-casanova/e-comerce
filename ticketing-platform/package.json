@@ -1,0 +1,19 @@
+{
+  "name": "ticketing-platform",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@9.15.0",
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "pnpm build && turbo run dev --parallel",
+    "typecheck": "turbo run typecheck",
+    "lint": "turbo run lint",
+    "migrate": "pnpm --filter @ticketing/db migrate"
+  },
+  "devDependencies": {
+    "@types/node": "^24.5.2",
+    "prettier": "^3.5.2",
+    "turbo": "^2.5.0",
+    "typescript": "^5.8.2"
+  }
+}

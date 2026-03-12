@@ -1,0 +1,21 @@
+{
+  "name": "@ticketing/db",
+  "version": "0.1.0",
+  "private": true,
+  "main": "dist/index.js",
+  "types": "src/index.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "dev": "tsc -w -p tsconfig.json",
+    "migrate": "tsx src/migrate.ts"
+  },
+  "dependencies": {
+    "pg": "^8.13.3",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.11.11",
+    "tsx": "^4.19.3"
+  }
+}

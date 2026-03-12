@@ -1,0 +1,20 @@
+openapi: 3.0.3
+info:
+  title: Auth Service API
+  version: 0.1.0
+paths:
+  /register:
+    post:
+      summary: Register a new user
+  /login:
+    post:
+      summary: Login and return access + refresh tokens
+  /refresh:
+    post:
+      summary: Refresh access token
+  /me:
+    get:
+      summary: Get current authenticated user
+  /assign-role:
+    post:
+      summary: Assign role to a user (super_admin)

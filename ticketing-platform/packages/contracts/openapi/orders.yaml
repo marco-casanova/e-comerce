@@ -1,0 +1,14 @@
+openapi: 3.0.3
+info:
+  title: Orders Service API
+  version: 0.1.0
+paths:
+  /orders/create-from-cart:
+    post:
+      summary: Create order from cart
+  /orders:
+    get:
+      summary: List orders for user
+  /orders/{id}:
+    get:
+      summary: Get order details

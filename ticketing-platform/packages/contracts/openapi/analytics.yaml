@@ -1,0 +1,11 @@
+openapi: 3.0.3
+info:
+  title: Analytics Service API
+  version: 0.1.0
+paths:
+  /analytics/track:
+    post:
+      summary: Track analytics event
+  /analytics/events/{eventId}/summary:
+    get:
+      summary: Get analytics summary per event

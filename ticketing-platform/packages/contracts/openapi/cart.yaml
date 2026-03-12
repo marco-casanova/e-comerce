@@ -1,0 +1,19 @@
+openapi: 3.0.3
+info:
+  title: Cart Service API
+  version: 0.1.0
+paths:
+  /cart:
+    get:
+      summary: Get current cart
+  /cart/items:
+    post:
+      summary: Add item to cart
+  /cart/items/{itemId}:
+    patch:
+      summary: Update item quantity
+    delete:
+      summary: Remove item
+  /cart/clear:
+    delete:
+      summary: Clear cart

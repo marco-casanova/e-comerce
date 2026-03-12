@@ -1,0 +1,14 @@
+openapi: 3.0.3
+info:
+  title: Tickets Service API
+  version: 0.1.0
+paths:
+  /tickets/my:
+    get:
+      summary: List current user tickets
+  /tickets/{id}:
+    get:
+      summary: Get ticket detail
+  /tickets/{id}/validate-scan:
+    post:
+      summary: Validate a ticket scan

@@ -1,0 +1,13 @@
+openapi: 3.0.3
+info:
+  title: Incidents Service API
+  version: 0.1.0
+paths:
+  /incidents:
+    get:
+      summary: List incidents by event
+    post:
+      summary: Create incident
+  /incidents/{id}:
+    patch:
+      summary: Update incident
