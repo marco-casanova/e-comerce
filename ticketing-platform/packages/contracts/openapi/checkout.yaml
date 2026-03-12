@@ -6,6 +6,46 @@ paths:
   /checkout/payment-intent:
     post:
       summary: Create Stripe payment intent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - orderId
+              properties:
+                orderId:
+                  type: string
+                  format: uuid
+      responses:
+        '200':
+          description: Payment sheet bootstrap payload
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - orderId
+                  - paymentIntentId
+                  - status
+                properties:
+                  orderId:
+                    type: string
+                    format: uuid
+                  paymentIntentId:
+                    type: string
+                  clientSecret:
+                    type: string
+                    nullable: true
+                  customerId:
+                    type: string
+                    nullable: true
+                  customerEphemeralKeySecret:
+                    type: string
+                    nullable: true
+                  status:
+                    type: string
   /checkout/webhook:
     post:
       summary: Stripe webhook callback

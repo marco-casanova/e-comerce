@@ -3,6 +3,7 @@
     "name": "nightowl",
     "slug": "nightowl",
     "version": "1.0.0",
+    "scheme": "nightowl",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -28,6 +29,7 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
+      "@stripe/stripe-react-native",
       "expo-secure-store",
       [
         "expo-camera",

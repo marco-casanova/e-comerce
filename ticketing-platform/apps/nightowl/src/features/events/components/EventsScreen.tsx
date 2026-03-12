@@ -36,6 +36,7 @@ export function EventsScreen() {
     isBootstrapping,
     isCheckingCameraPermission,
     isDemoMode,
+    isStripeConfigured,
     loadingEventId,
     paymentIntent,
     requestCameraPermission,
@@ -140,6 +141,7 @@ export function EventsScreen() {
             onCreateOrder={() => void handleCreateOrder()}
             onPreparePayment={() => void handlePreparePayment()}
             onUpdateCartItem={(item, nextQuantity) => void handleUpdateCartItem(item, nextQuantity)}
+            isStripeConfigured={isStripeConfigured}
             paymentIntent={paymentIntent}
             visibleEvents={visibleEvents}
           />

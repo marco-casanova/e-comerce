@@ -98,6 +98,8 @@ type PaymentIntentResponse = {
   orderId: string;
   paymentIntentId: string;
   clientSecret?: string | null;
+  customerId?: string | null;
+  customerEphemeralKeySecret?: string | null;
   status: string;
 };
 

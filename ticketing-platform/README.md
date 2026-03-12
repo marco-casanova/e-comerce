@@ -79,7 +79,8 @@ docker compose build
 docker compose --profile services up
 ```
 
-Tip: run `pnpm install` first on host so the mounted workspace already has dependencies available for the service containers.
+Tip: service containers run compiled `dist` output (not `tsx watch`) to avoid cross-platform `esbuild` issues with mounted `node_modules`.
+After code changes, restart impacted containers so they rebuild before running.
 
 ## Core endpoints implemented
 

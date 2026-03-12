@@ -1,8 +1,14 @@
 import { Camera } from 'expo-camera';
+import { PaymentSheetError, useStripe } from '@stripe/stripe-react-native';
 import { startTransition, useDeferredValue, useEffect, useState } from 'react';
 
 import { useAuth } from '../../../core/auth/AuthProvider';
 import { toAppError } from '../../../core/errors/appError';
+import {
+  isStripeConfigured,
+  STRIPE_MERCHANT_DISPLAY_NAME,
+  STRIPE_RETURN_URL,
+} from '../../../core/payments/stripeConfig';
 import { eventsApi } from '../api/eventsApi';
 import type { CartItem, EventAddOn, EventDetail, EventSummary, OrderSummary, PaymentIntentSummary, TicketPass, TicketType } from '../types';
 import { extractTicketIdFromPayload, formatShortDateTime } from '../utils';
@@ -19,6 +25,19 @@ export type CameraPermissionState = {
   canAskAgain: boolean;
 };
 
+type CheckoutOutcome =
+  | 'paid'
+  | 'already_paid'
+  | 'canceled'
+  | 'stripe_not_configured'
+  | 'requires_external_confirmation';
+
+type CheckoutResult = {
+  paymentIntent: PaymentIntentSummary;
+  ticketSnapshot: TicketPass[] | null;
+  outcome: CheckoutOutcome;
+};
+
 type MessageTarget = 'banner' | 'scan';
 
 type BusyActionOptions<T> = {
@@ -33,6 +52,7 @@ type BusyActionOptions<T> = {
 
 export function useEventsExperience() {
   const { session, signOut } = useAuth();
+  const { initPaymentSheet, presentPaymentSheet } = useStripe();
   const [activeTab, setActiveTab] = useState<ScreenTab>('discover');
   const [events, setEvents] = useState<EventSummary[]>([]);
   const [eventDetails, setEventDetails] = useState<Record<string, EventDetail>>({});
@@ -345,15 +365,118 @@ export function useEventsExperience() {
 
     await runBusyAction({
       busyKey: 'checkout:payment-intent',
-      action: () => eventsApi.createPaymentIntent(currentOrder.id),
-      onSuccess: (nextPaymentIntent) => {
-        setPaymentIntent(nextPaymentIntent);
+      action: async () => {
+        const nextPaymentIntent = await eventsApi.createPaymentIntent(currentOrder.id);
+
+        if (nextPaymentIntent.status === 'already_paid') {
+          const nextTickets = await eventsApi.listTickets();
+          return {
+            paymentIntent: nextPaymentIntent,
+            ticketSnapshot: nextTickets,
+            outcome: 'already_paid',
+          } satisfies CheckoutResult;
+        }
+
+        if (!nextPaymentIntent.clientSecret) {
+          throw new Error('Stripe payment intent is missing a client secret.');
+        }
+
+        if (eventsApi.getDataSourceMode() === 'mock') {
+          return {
+            paymentIntent: nextPaymentIntent,
+            ticketSnapshot: null,
+            outcome: 'requires_external_confirmation',
+          } satisfies CheckoutResult;
+        }
+
+        if (!isStripeConfigured) {
+          return {
+            paymentIntent: nextPaymentIntent,
+            ticketSnapshot: null,
+            outcome: 'stripe_not_configured',
+          } satisfies CheckoutResult;
+        }
+
+        const paymentSheetConfig: Parameters<typeof initPaymentSheet>[0] =
+          nextPaymentIntent.customerId && nextPaymentIntent.customerEphemeralKeySecret
+            ? {
+                merchantDisplayName: STRIPE_MERCHANT_DISPLAY_NAME,
+                paymentIntentClientSecret: nextPaymentIntent.clientSecret,
+                customerId: nextPaymentIntent.customerId,
+                customerEphemeralKeySecret: nextPaymentIntent.customerEphemeralKeySecret,
+                returnURL: STRIPE_RETURN_URL,
+              }
+            : {
+                merchantDisplayName: STRIPE_MERCHANT_DISPLAY_NAME,
+                paymentIntentClientSecret: nextPaymentIntent.clientSecret,
+                returnURL: STRIPE_RETURN_URL,
+              };
+
+        const initResult = await initPaymentSheet(paymentSheetConfig);
+
+        if (initResult.error) {
+          throw new Error(initResult.error.message);
+        }
+
+        const paymentResult = await presentPaymentSheet();
+        if (paymentResult.error) {
+          if (paymentResult.error.code === PaymentSheetError.Canceled) {
+            return {
+              paymentIntent: nextPaymentIntent,
+              ticketSnapshot: null,
+              outcome: 'canceled',
+            } satisfies CheckoutResult;
+          }
+
+          throw new Error(paymentResult.error.message);
+        }
+
+        const nextTickets = await eventsApi.listTickets();
+        return {
+          paymentIntent: nextPaymentIntent,
+          ticketSnapshot: nextTickets,
+          outcome: 'paid',
+        } satisfies CheckoutResult;
+      },
+      onSuccess: (checkoutResult) => {
+        setPaymentIntent(checkoutResult.paymentIntent);
+
+        if (checkoutResult.ticketSnapshot) {
+          setTickets(checkoutResult.ticketSnapshot);
+        }
+
+        if (checkoutResult.outcome === 'paid') {
+          setBanner({
+            tone: 'success',
+            message:
+              'Payment confirmed in Stripe. If passes are still processing, refresh the ticket wallet in a few seconds.',
+          });
+          return;
+        }
+
+        if (checkoutResult.outcome === 'already_paid') {
+          setBanner({ tone: 'info', message: 'Order is already paid. Ticket wallet refreshed.' });
+          return;
+        }
+
+        if (checkoutResult.outcome === 'canceled') {
+          setBanner({ tone: 'info', message: 'Stripe checkout was canceled. You can retry payment anytime.' });
+          return;
+        }
+
+        if (checkoutResult.outcome === 'stripe_not_configured') {
+          setBanner({
+            tone: 'info',
+            message:
+              'Payment intent is ready. Set EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY to complete card checkout inside the app.',
+          });
+          return;
+        }
+
         setBanner({
           tone: 'info',
           message:
-            nextPaymentIntent.status === 'already_paid'
-              ? 'Order is already paid. Refresh tickets to load the issued passes.'
-              : 'Stripe payment intent created. Complete payment via the webhook-backed Stripe flow.',
+            'Stripe payment intent created. Demo mode cannot confirm real cards, so complete payment via your webhook test flow.',
         });
       },
     });
@@ -461,6 +584,7 @@ export function useEventsExperience() {
     isBootstrapping,
     isCheckingCameraPermission,
     isDemoMode,
+    isStripeConfigured,
     loadingEventId,
     paymentIntent,
     requestCameraPermission,

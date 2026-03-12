@@ -14,6 +14,7 @@ const env = readEnv({
   JWT_SECRET: z.string().min(16),
   STRIPE_SECRET_KEY: z.string().min(1),
   STRIPE_WEBHOOK_SECRET: z.string().min(1),
+  STRIPE_EPHEMERAL_KEY_API_VERSION: z.string().default('2024-06-20'),
   REDIS_URL: z.string().default('redis://localhost:6379')
 });
 
@@ -41,6 +42,57 @@ const paymentIntentSchema = z.object({
   orderId: z.string().uuid()
 });
 
+async function getOrCreateStripeCustomerId(userId: string, email: string) {
+  const userResult = await query<{ stripe_customer_id: string | null }>(
+    'SELECT stripe_customer_id FROM users WHERE id = $1',
+    [userId]
+  );
+
+  const userRecord = userResult.rows[0];
+  if (!userRecord) {
+    throw new AppError(404, 'Order owner not found', 'ORDER_OWNER_NOT_FOUND');
+  }
+
+  if (userRecord.stripe_customer_id) {
+    return userRecord.stripe_customer_id;
+  }
+
+  const customer = await stripe.customers.create({
+    email,
+    metadata: {
+      userId
+    }
+  });
+
+  await query('UPDATE users SET stripe_customer_id = $1, updated_at = NOW() WHERE id = $2', [customer.id, userId]);
+  return customer.id;
+}
+
+async function createPaymentIntentForOrder(order: {
+  id: string;
+  user_id: string;
+  total_cents: number;
+  currency: string;
+}, customerId: string) {
+  return stripe.paymentIntents.create(
+    {
+      amount: order.total_cents,
+      currency: order.currency,
+      customer: customerId,
+      automatic_payment_methods: {
+        enabled: true
+      },
+      metadata: {
+        orderId: order.id,
+        userId: order.user_id
+      }
+    },
+    {
+      idempotencyKey: order.id
+    }
+  );
+}
+
 app.post('/checkout/payment-intent', { preHandler: authGuard(env.JWT_SECRET, 'orders:own') }, async (request) => {
   const user = requireUser(request);
   const body = paymentIntentSchema.parse(request.body);
@@ -52,7 +104,16 @@ app.post('/checkout/payment-intent', { preHandler: authGuard(env.JWT_SECRET, 'or
     total_cents: number;
     currency: string;
     payment_intent_id: string | null;
-  }>('SELECT id, user_id, status, total_cents, currency, payment_intent_id FROM orders WHERE id = $1', [body.orderId]);
+    owner_email: string;
+  }>(
+    `
+      SELECT o.id, o.user_id, o.status, o.total_cents, o.currency, o.payment_intent_id, u.email AS owner_email
+      FROM orders o
+      INNER JOIN users u ON u.id = o.user_id
+      WHERE o.id = $1
+    `,
+    [body.orderId]
+  );
 
   const order = orderResult.rows[0];
   if (!order) {
@@ -76,29 +137,51 @@ app.post('/checkout/payment-intent', { preHandler: authGuard(env.JWT_SECRET, 'or
     throw new AppError(409, 'Order is not payable in its current state', 'ORDER_NOT_PAYABLE');
   }
 
-  const paymentIntent = await stripe.paymentIntents.create(
-    {
-      amount: order.total_cents,
-      currency: order.currency,
-      metadata: {
-        orderId: order.id,
-        userId: order.user_id
-      }
-    },
-    {
-      idempotencyKey: order.id
+  const customerId = await getOrCreateStripeCustomerId(order.user_id, order.owner_email);
+  let paymentIntent: Stripe.PaymentIntent;
+
+  if (order.payment_intent_id) {
+    try {
+      paymentIntent = await stripe.paymentIntents.retrieve(order.payment_intent_id);
+    } catch {
+      paymentIntent = await createPaymentIntentForOrder(order, customerId);
     }
+  } else {
+    paymentIntent = await createPaymentIntentForOrder(order, customerId);
+  }
+
+  if (!paymentIntent.customer) {
+    paymentIntent = await stripe.paymentIntents.update(paymentIntent.id, {
+      customer: customerId
+    });
+  }
+
+  if (!paymentIntent.client_secret) {
+    throw new AppError(500, 'Stripe payment intent missing client secret', 'MISSING_CLIENT_SECRET');
+  }
+
+  const ephemeralKey = await stripe.ephemeralKeys.create(
+    { customer: customerId },
+    { apiVersion: env.STRIPE_EPHEMERAL_KEY_API_VERSION as Stripe.LatestApiVersion }
   );
 
-  await query('UPDATE orders SET payment_intent_id = $1, updated_at = NOW() WHERE id = $2', [
-    paymentIntent.id,
-    order.id
-  ]);
+  if (!ephemeralKey.secret) {
+    throw new AppError(500, 'Stripe ephemeral key missing secret', 'MISSING_EPHEMERAL_KEY_SECRET');
+  }
+
+  if (order.payment_intent_id !== paymentIntent.id) {
+    await query('UPDATE orders SET payment_intent_id = $1, updated_at = NOW() WHERE id = $2', [
+      paymentIntent.id,
+      order.id
+    ]);
+  }
 
   return {
     orderId: order.id,
     paymentIntentId: paymentIntent.id,
     clientSecret: paymentIntent.client_secret,
+    customerId,
+    customerEphemeralKeySecret: ephemeralKey.secret,
     status: paymentIntent.status
   };
 });

@@ -427,6 +427,8 @@ export function createMockPaymentIntent(orderId: string) {
     orderId,
     paymentIntentId: orderRecord.paymentIntentId,
     clientSecret: null,
+    customerId: null,
+    customerEphemeralKeySecret: null,
     status: 'already_paid',
   } satisfies PaymentIntentSummary);
 }

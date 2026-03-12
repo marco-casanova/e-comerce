@@ -1,8 +1,14 @@
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
+import { StripeProvider } from '@stripe/stripe-react-native';
 
 import { AuthProvider, useAuth } from '../core/auth/AuthProvider';
+import {
+  STRIPE_MERCHANT_IDENTIFIER,
+  STRIPE_PUBLISHABLE_KEY,
+  STRIPE_URL_SCHEME,
+} from '../core/payments/stripeConfig';
 import { LoginScreen } from '../features/auth/components/LoginScreen';
 import { EventsScreen } from '../features/events/components/EventsScreen';
 
@@ -30,9 +36,15 @@ export function AppRoot() {
     <SafeAreaProvider>
       <StatusBar style="light" />
       <AuthProvider>
-        <SafeAreaView style={styles.container}>
-          <RootContent />
-        </SafeAreaView>
+        <StripeProvider
+          merchantIdentifier={STRIPE_MERCHANT_IDENTIFIER}
+          publishableKey={STRIPE_PUBLISHABLE_KEY ?? ''}
+          urlScheme={STRIPE_URL_SCHEME}
+        >
+          <SafeAreaView style={styles.container}>
+            <RootContent />
+          </SafeAreaView>
+        </StripeProvider>
       </AuthProvider>
     </SafeAreaProvider>
   );

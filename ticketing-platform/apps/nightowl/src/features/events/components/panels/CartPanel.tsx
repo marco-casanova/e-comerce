@@ -9,6 +9,7 @@ export function CartPanel({
   busyKey,
   cart,
   currentOrder,
+  isStripeConfigured,
   onClearCart,
   onCreateOrder,
   onPreparePayment,
@@ -19,6 +20,7 @@ export function CartPanel({
   busyKey: string | null;
   cart: ShoppingCart;
   currentOrder: OrderSummary | null;
+  isStripeConfigured: boolean;
   onClearCart: () => void;
   onCreateOrder: () => void;
   onPreparePayment: () => void;
@@ -31,10 +33,14 @@ export function CartPanel({
       <View style={styles.panel}>
         <Text style={styles.panelTitle}>Checkout lane</Text>
         <Text style={styles.eventDescription}>
-          Create an order from the cart first, then request the Stripe payment intent. Ticket passes appear after the
-          Stripe webhook confirms the payment. Add the native Stripe PaymentSheet SDK when you want card capture
-          directly inside the app.
+          Create an order from the cart first, then open Stripe checkout in-app. Ticket passes appear after the Stripe
+          webhook confirms payment.
         </Text>
+        {!isStripeConfigured ? (
+          <Text style={styles.eventDescription}>
+            In-app card capture is disabled because `EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY` is missing.
+          </Text>
+        ) : null}
 
         <View style={styles.checkoutRow}>
           <Pressable
@@ -59,7 +65,11 @@ export function CartPanel({
             ]}
           >
             <Text style={styles.secondaryButtonText}>
-              {busyKey === 'checkout:payment-intent' ? 'Preparing...' : 'Prepare Stripe'}
+              {busyKey === 'checkout:payment-intent'
+                ? 'Opening Stripe...'
+                : isStripeConfigured
+                  ? 'Pay with Stripe'
+                  : 'Prepare Stripe'}
             </Text>
           </Pressable>
         </View>

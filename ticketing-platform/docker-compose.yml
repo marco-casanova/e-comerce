@@ -53,7 +53,7 @@ services:
   api-gateway:
     <<: *service-common
     profiles: ['services']
-    command: sh -lc "pnpm --filter @ticketing/api-gateway... build && pnpm --filter @ticketing/api-gateway dev"
+    command: sh -lc "pnpm --filter @ticketing/api-gateway... build && pnpm --filter @ticketing/api-gateway exec node dist/index.js"
     environment:
       AUTH_URL: http://auth:4001
       CATALOG_URL: http://catalog:4002
@@ -91,35 +91,35 @@ services:
   auth:
     <<: *service-common
     profiles: ['services']
-    command: sh -lc "pnpm --filter @ticketing/auth... build && pnpm --filter @ticketing/auth dev"
+    command: sh -lc "pnpm --filter @ticketing/auth... build && pnpm --filter @ticketing/auth exec node dist/index.js"
     ports:
       - '4001:4001'
 
   catalog:
     <<: *service-common
     profiles: ['services']
-    command: sh -lc "pnpm --filter @ticketing/catalog... build && pnpm --filter @ticketing/catalog dev"
+    command: sh -lc "pnpm --filter @ticketing/catalog... build && pnpm --filter @ticketing/catalog exec node dist/index.js"
     ports:
       - '4002:4002'
 
   cart:
     <<: *service-common
     profiles: ['services']
-    command: sh -lc "pnpm --filter @ticketing/cart... build && pnpm --filter @ticketing/cart dev"
+    command: sh -lc "pnpm --filter @ticketing/cart... build && pnpm --filter @ticketing/cart exec node dist/index.js"
     ports:
       - '4003:4003'
 
   orders:
     <<: *service-common
     profiles: ['services']
-    command: sh -lc "pnpm --filter @ticketing/orders... build && pnpm --filter @ticketing/orders dev"
+    command: sh -lc "pnpm --filter @ticketing/orders... build && pnpm --filter @ticketing/orders exec node dist/index.js"
     ports:
       - '4004:4004'
 
   checkout:
     <<: *service-common
     profiles: ['services']
-    command: sh -lc "pnpm --filter @ticketing/checkout... build && pnpm --filter @ticketing/checkout dev"
+    command: sh -lc "pnpm --filter @ticketing/checkout... build && pnpm --filter @ticketing/checkout exec node dist/index.js"
     environment:
       DATABASE_URL: postgres://postgres:postgres@postgres:5432/ticketing
       REDIS_URL: redis://redis:6379
@@ -127,41 +127,42 @@ services:
       LOG_LEVEL: ${LOG_LEVEL:-info}
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-sk_test_change_me}
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-whsec_change_me}
+      STRIPE_EPHEMERAL_KEY_API_VERSION: ${STRIPE_EPHEMERAL_KEY_API_VERSION:-2024-06-20}
     ports:
       - '4005:4005'
 
   tickets:
     <<: *service-common
     profiles: ['services']
-    command: sh -lc "pnpm --filter @ticketing/tickets... build && pnpm --filter @ticketing/tickets dev"
+    command: sh -lc "pnpm --filter @ticketing/tickets... build && pnpm --filter @ticketing/tickets exec node dist/index.js"
     ports:
       - '4006:4006'
 
   admin:
     <<: *service-common
     profiles: ['services']
-    command: sh -lc "pnpm --filter @ticketing/admin... build && pnpm --filter @ticketing/admin dev"
+    command: sh -lc "pnpm --filter @ticketing/admin... build && pnpm --filter @ticketing/admin exec node dist/index.js"
     ports:
       - '4007:4007'
 
   incidents:
     <<: *service-common
     profiles: ['services']
-    command: sh -lc "pnpm --filter @ticketing/incidents... build && pnpm --filter @ticketing/incidents dev"
+    command: sh -lc "pnpm --filter @ticketing/incidents... build && pnpm --filter @ticketing/incidents exec node dist/index.js"
     ports:
       - '4008:4008'
 
   analytics:
     <<: *service-common
     profiles: ['services']
-    command: sh -lc "pnpm --filter @ticketing/analytics... build && pnpm --filter @ticketing/analytics dev"
+    command: sh -lc "pnpm --filter @ticketing/analytics... build && pnpm --filter @ticketing/analytics exec node dist/index.js"
     ports:
       - '4009:4009'
 
   notifications:
     <<: *service-common
     profiles: ['services']
-    command: sh -lc "pnpm --filter @ticketing/notifications... build && pnpm --filter @ticketing/notifications dev"
+    command: sh -lc "pnpm --filter @ticketing/notifications... build && pnpm --filter @ticketing/notifications exec node dist/index.js"
     environment:
       REDIS_URL: redis://redis:6379
       LOG_LEVEL: ${LOG_LEVEL:-info}
