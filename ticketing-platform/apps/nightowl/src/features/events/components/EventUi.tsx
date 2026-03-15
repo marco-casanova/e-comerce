@@ -14,14 +14,20 @@ export function TabButton({
   isActive,
   onPress,
   count,
+  testID,
 }: {
   label: string;
   isActive: boolean;
   onPress: () => void;
   count?: number;
+  testID?: string;
 }) {
   return (
-    <Pressable onPress={onPress} style={[styles.tabButton, isActive ? styles.tabButtonActive : null]}>
+    <Pressable
+      testID={testID}
+      onPress={onPress}
+      style={[styles.tabButton, isActive ? styles.tabButtonActive : null]}
+    >
       <Text style={[styles.tabButtonText, isActive ? styles.tabButtonTextActive : null]}>
         {label}
         {typeof count === 'number' ? ` ${count}` : ''}
@@ -43,6 +49,7 @@ export function SellableCard({
   onAdd,
   actionLabel,
   category,
+  testIDPrefix,
 }: {
   label: string;
   description: string | null;
@@ -56,12 +63,15 @@ export function SellableCard({
   onAdd: () => void;
   actionLabel: string;
   category?: string;
+  testIDPrefix?: string;
 }) {
   return (
-    <View style={styles.sellableCard}>
+    <View testID={testIDPrefix ? `${testIDPrefix}-card` : undefined} style={styles.sellableCard}>
       <View style={styles.sellableTopRow}>
         <View style={styles.sellableCopy}>
-          <Text style={styles.sellableTitle}>{label}</Text>
+          <Text testID={testIDPrefix ? `${testIDPrefix}-title` : undefined} style={styles.sellableTitle}>
+            {label}
+          </Text>
           <Text style={styles.sellableDescription}>{description ?? 'Details coming soon.'}</Text>
         </View>
 
@@ -79,9 +89,20 @@ export function SellableCard({
       </View>
 
       <View style={styles.sellableActions}>
-        <QuantityControl quantity={quantity} onDecrease={onDecrease} onIncrease={onIncrease} disabled={busy} />
+        <QuantityControl
+          quantity={quantity}
+          onDecrease={onDecrease}
+          onIncrease={onIncrease}
+          disabled={busy}
+          testIDPrefix={testIDPrefix ? `${testIDPrefix}-quantity` : undefined}
+        />
 
-        <Pressable onPress={onAdd} disabled={busy} style={[styles.primaryButton, busy ? styles.buttonDisabled : null]}>
+        <Pressable
+          testID={testIDPrefix ? `${testIDPrefix}-add-button` : undefined}
+          onPress={onAdd}
+          disabled={busy}
+          style={[styles.primaryButton, busy ? styles.buttonDisabled : null]}
+        >
           <Text style={styles.primaryButtonText}>{busy ? 'Adding...' : actionLabel}</Text>
         </Pressable>
       </View>

@@ -1,3 +1,4 @@
+import { IS_E2E_MODE } from '../../../core/config/appConfig';
 import { httpClient } from '../../../core/api/httpClient';
 import { toAppError } from '../../../core/errors/appError';
 import type {
@@ -241,7 +242,7 @@ function mapScanResult(result: ScanValidationResponse): ScanValidationResult {
 
 type DataSourceMode = 'remote' | 'mock';
 
-let dataSourceMode: DataSourceMode = 'remote';
+let dataSourceMode: DataSourceMode = IS_E2E_MODE ? 'mock' : 'remote';
 
 function shouldFallbackToMock(error: unknown) {
   const appError = toAppError(error);

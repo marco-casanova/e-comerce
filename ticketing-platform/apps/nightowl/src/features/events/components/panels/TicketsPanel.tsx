@@ -17,10 +17,10 @@ export function TicketsPanel({
 }) {
   return (
     <>
-      <View style={styles.panel}>
+      <View testID="tickets-panel" style={styles.panel}>
         <View style={styles.panelHeaderRow}>
           <Text style={styles.panelTitle}>Ticket wallet</Text>
-          <Pressable onPress={onRefreshTickets} disabled={busyKey === 'tickets:refresh'}>
+          <Pressable testID="tickets-refresh-button" onPress={onRefreshTickets} disabled={busyKey === 'tickets:refresh'}>
             <Text style={styles.clearText}>{busyKey === 'tickets:refresh' ? 'Refreshing...' : 'Refresh'}</Text>
           </Pressable>
         </View>
@@ -33,14 +33,16 @@ export function TicketsPanel({
 
       <View style={styles.stack}>
         {tickets.length ? (
-          tickets.map((ticket) => {
+          tickets.map((ticket, index) => {
             const payload = buildEntryPayload(ticket.id, ticket.eventId, ticket.code);
 
             return (
-              <View key={ticket.id} style={styles.ticketCard}>
+              <View key={ticket.id} testID={`ticket-card-${index}`} style={styles.ticketCard}>
                 <View style={styles.ticketHeader}>
                   <View>
-                    <Text style={styles.ticketEventTitle}>{ticket.eventTitle}</Text>
+                    <Text testID={`ticket-event-title-${index}`} style={styles.ticketEventTitle}>
+                      {ticket.eventTitle}
+                    </Text>
                     <Text style={styles.ticketEventMeta}>{ticket.ticketTypeName}</Text>
                     <Text style={styles.ticketEventMeta}>
                       {formatEventDateRange(ticket.eventStartsAt, ticket.eventEndsAt)}
@@ -48,7 +50,9 @@ export function TicketsPanel({
                   </View>
 
                   <View style={[styles.ticketStatusChip, ticket.status === 'used' ? styles.ticketStatusUsed : null]}>
-                    <Text style={styles.ticketStatusText}>{ticket.status}</Text>
+                    <Text testID={`ticket-status-${index}`} style={styles.ticketStatusText}>
+                      {ticket.status}
+                    </Text>
                   </View>
                 </View>
 
@@ -67,13 +71,16 @@ export function TicketsPanel({
 
                 <View style={styles.payloadBox}>
                   <Text style={styles.payloadLabel}>Door payload</Text>
-                  <Text style={styles.payloadText}>{payload}</Text>
+                  <Text testID={`ticket-payload-${index}`} style={styles.payloadText}>
+                    {payload}
+                  </Text>
                 </View>
               </View>
             );
           })
         ) : (
           <EmptyState
+            testID="tickets-empty-state"
             title="No ticket passes yet"
             description="Complete the checkout flow and refresh the wallet after Stripe confirms payment."
           />

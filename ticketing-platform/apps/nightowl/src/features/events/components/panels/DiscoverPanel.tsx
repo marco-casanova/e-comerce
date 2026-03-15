@@ -2,7 +2,7 @@ import { ActivityIndicator, Pressable, ScrollView, Text, TextInput, View } from 
 
 import { EmptyState } from '../../../../core/ui/components';
 import type { EventAddOn, EventDetail, EventSummary, TicketType } from '../../types';
-import { formatCurrency, formatEventDateRange } from '../../utils';
+import { formatCurrency, formatEventDateRange, toTestIdSegment } from '../../utils';
 import { SellableCard } from '../EventUi';
 import { styles } from '../eventsScreenStyles';
 
@@ -39,10 +39,11 @@ export function DiscoverPanel({
 }) {
   return (
     <>
-      <View style={styles.panel}>
+      <View testID="discover-panel" style={styles.panel}>
         <Text style={styles.panelTitle}>Browse events</Text>
         <TextInput
           autoCapitalize="none"
+          testID="discover-search-input"
           placeholder="Search by venue, title or vibe"
           placeholderTextColor="#7a8599"
           style={styles.searchInput}
@@ -54,6 +55,7 @@ export function DiscoverPanel({
           {filteredEvents.map((event) => (
             <Pressable
               key={event.id}
+              testID={`discover-event-card-${toTestIdSegment(event.title)}`}
               onPress={() => onSelectEvent(event.id)}
               style={[
                 styles.eventCard,
@@ -70,7 +72,7 @@ export function DiscoverPanel({
       </View>
 
       {selectedEventSummary ? (
-        <View style={styles.panel}>
+        <View testID="discover-event-detail" style={styles.panel}>
           {loadingEventId === selectedEventSummary.id && !selectedEvent ? (
             <View style={styles.inlineLoader}>
               <ActivityIndicator color="#f0b35c" />
@@ -82,7 +84,9 @@ export function DiscoverPanel({
             <>
               <View style={styles.eventDetailHeader}>
                 <View style={styles.eventDetailCopy}>
-                  <Text style={styles.panelTitle}>{selectedEvent.title}</Text>
+                  <Text testID="discover-selected-event-title" style={styles.panelTitle}>
+                    {selectedEvent.title}
+                  </Text>
                   <Text style={styles.eventDetailMeta}>
                     {formatEventDateRange(selectedEvent.startsAt, selectedEvent.endsAt)}
                   </Text>
@@ -103,6 +107,7 @@ export function DiscoverPanel({
                 {selectedEvent.ticketTypes.map((ticketType) => (
                   <SellableCard
                     key={ticketType.id}
+                    testIDPrefix={`discover-ticket-${toTestIdSegment(ticketType.name)}`}
                     label={ticketType.name}
                     description={ticketType.description}
                     price={formatCurrency(ticketType.priceCents, ticketType.currency)}
@@ -124,6 +129,7 @@ export function DiscoverPanel({
                   selectedEvent.addOns.map((addOn) => (
                     <SellableCard
                       key={addOn.id}
+                      testIDPrefix={`discover-addon-${toTestIdSegment(addOn.name)}`}
                       label={addOn.name}
                       description={addOn.description ?? `${addOn.category} add-on`}
                       price={formatCurrency(addOn.priceCents, addOn.currency)}
@@ -143,6 +149,7 @@ export function DiscoverPanel({
                   ))
                 ) : (
                   <EmptyState
+                    testID="discover-empty-addons"
                     title="No extras on this event yet"
                     description="When an organiser adds food, drinks, combos or merch, they will appear here."
                   />
@@ -153,6 +160,7 @@ export function DiscoverPanel({
         </View>
       ) : (
         <EmptyState
+          testID="discover-empty-events"
           title="No events match your search"
           description="Try a different venue, date or event name."
         />

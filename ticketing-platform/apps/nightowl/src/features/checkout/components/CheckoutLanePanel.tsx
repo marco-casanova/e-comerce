@@ -33,7 +33,7 @@ export function CheckoutLanePanel({
   const canCheckout = Boolean(cart.items.length || (currentOrder && currentOrder.status === 'pending_payment'));
 
   return (
-    <View style={styles.panel}>
+    <View testID="checkout-panel" style={styles.panel}>
       <Text style={styles.panelTitle}>Checkout lane</Text>
       <Text style={styles.eventDescription}>
         Confirm the total, then pay in one Stripe flow. Stripe will collect the required details like card info and
@@ -41,10 +41,13 @@ export function CheckoutLanePanel({
       </Text>
       <View style={styles.checkoutAmountCard}>
         <Text style={styles.checkoutAmountLabel}>Amount to pay</Text>
-        <Text style={styles.checkoutAmountValue}>{formatCurrency(checkoutAmountCents, checkoutCurrency)}</Text>
+        <Text testID="checkout-amount-value" style={styles.checkoutAmountValue}>
+          {formatCurrency(checkoutAmountCents, checkoutCurrency)}
+        </Text>
         <Text style={styles.checkoutAmountLabel}>Choose payment method</Text>
         <View style={styles.checkoutMethodRow}>
           <Pressable
+            testID="checkout-method-wallet"
             onPress={() => onSelectPaymentMethod('wallet')}
             disabled={!isPlatformWalletSupported}
             style={[
@@ -63,6 +66,7 @@ export function CheckoutLanePanel({
             </Text>
           </Pressable>
           <Pressable
+            testID="checkout-method-card"
             onPress={() => onSelectPaymentMethod('card')}
             style={[
               styles.checkoutMethodChip,
@@ -92,6 +96,7 @@ export function CheckoutLanePanel({
       <Pressable
         disabled={!canCheckout || busyKey === 'checkout:pay'}
         onPress={onCheckout}
+        testID="checkout-pay-button"
         style={[styles.primaryButton, !canCheckout || busyKey === 'checkout:pay' ? styles.buttonDisabled : null]}
       >
         <Text style={styles.primaryButtonText}>
@@ -113,7 +118,7 @@ export function CheckoutLanePanel({
       </Text>
 
       {currentOrder ? (
-        <View style={styles.checkoutSummary}>
+        <View testID="checkout-order-summary" style={styles.checkoutSummary}>
           <SummaryRow label="Latest order" value={currentOrder.id.slice(0, 8)} />
           <SummaryRow label="Status" value={currentOrder.status} />
           <SummaryRow label="Total" value={formatCurrency(currentOrder.totalCents, currentOrder.currency)} />
@@ -122,7 +127,7 @@ export function CheckoutLanePanel({
       ) : null}
 
       {paymentIntent ? (
-        <View style={styles.checkoutSummary}>
+        <View testID="checkout-payment-summary" style={styles.checkoutSummary}>
           <SummaryRow label="Latest payment" value={paymentIntent.paymentIntentId.slice(0, 10)} />
           <SummaryRow label="Stripe status" value={paymentIntent.status} />
         </View>

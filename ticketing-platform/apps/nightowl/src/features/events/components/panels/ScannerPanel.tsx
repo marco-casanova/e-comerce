@@ -107,7 +107,7 @@ export function ScannerPanel({
   visibleEvents: EventSummary[];
 }) {
   return (
-    <View style={styles.panel}>
+    <View testID="scanner-panel" style={styles.panel}>
       <Text style={styles.panelTitle}>Door scanner</Text>
       <Text style={styles.eventDescription}>
         Staff validation checks duplication, event mismatch, and whether the scan is inside the allowed entry window.
@@ -126,6 +126,7 @@ export function ScannerPanel({
         {visibleEvents.map((event) => (
           <Pressable
             key={event.id}
+            testID={`scanner-event-chip-${event.title.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}
             onPress={() => onSelectScannerEvent(event.id)}
             style={[
               styles.scannerEventChip,
@@ -139,6 +140,7 @@ export function ScannerPanel({
 
       <TextInput
         autoCapitalize="none"
+        testID="scanner-input"
         placeholder="Paste ticket payload or ticket id"
         placeholderTextColor="#7a8599"
         style={styles.searchInput}
@@ -149,6 +151,7 @@ export function ScannerPanel({
       <Pressable
         onPress={onValidateScan}
         disabled={busyKey === 'scanner:validate'}
+        testID="scanner-validate-button"
         style={[styles.primaryButton, busyKey === 'scanner:validate' ? styles.buttonDisabled : null]}
       >
         <Text style={styles.primaryButtonText}>
@@ -156,13 +159,13 @@ export function ScannerPanel({
         </Text>
       </Pressable>
 
-      <Pressable onPress={onResetScanner} style={styles.secondaryButton}>
+      <Pressable testID="scanner-reset-button" onPress={onResetScanner} style={styles.secondaryButton}>
         <Text style={styles.secondaryButtonText}>
           {scannerCameraPaused ? 'Scan next ticket' : 'Reset scanner'}
         </Text>
       </Pressable>
 
-      {scanFeedback ? <BannerCard tone={scanFeedback.tone} message={scanFeedback.message} compact /> : null}
+      {scanFeedback ? <BannerCard testID="scanner-banner" tone={scanFeedback.tone} message={scanFeedback.message} compact /> : null}
     </View>
   );
 }

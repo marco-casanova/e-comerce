@@ -1,10 +1,25 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-export function SummaryRow({ label, value, emphasis }: { label: string; value: string; emphasis?: boolean }) {
+export function SummaryRow({
+  label,
+  value,
+  emphasis,
+  valueTestID,
+}: {
+  label: string;
+  value: string;
+  emphasis?: boolean;
+  valueTestID?: string;
+}) {
   return (
     <View style={styles.summaryRow}>
       <Text style={styles.summaryLabel}>{label}</Text>
-      <Text style={[styles.summaryValue, emphasis ? styles.summaryValueEmphasis : null]}>{value}</Text>
+      <Text
+        testID={valueTestID}
+        style={[styles.summaryValue, emphasis ? styles.summaryValueEmphasis : null]}
+      >
+        {value}
+      </Text>
     </View>
   );
 }

@@ -8,6 +8,7 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "test": "vitest run",
+    "test:core": "vitest run src/core",
     "test:watch": "vitest"
   },
   "dependencies": {

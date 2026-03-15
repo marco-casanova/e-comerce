@@ -63,12 +63,12 @@ export function EventsScreen() {
   } = useEventsExperience();
 
   return (
-    <View style={styles.screen}>
+    <View testID="events-screen" style={styles.screen}>
       <View pointerEvents="none" style={styles.backgroundOrbPrimary} />
       <View pointerEvents="none" style={styles.backgroundOrbSecondary} />
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.heroCard}>
+        <View testID="events-hero" style={styles.heroCard}>
           <View style={styles.heroHeader}>
             <View style={styles.heroCopy}>
               <Text style={styles.kicker}>Night Owl Mobile</Text>
@@ -79,7 +79,7 @@ export function EventsScreen() {
               </Text>
             </View>
 
-            <Pressable onPress={() => void signOut()} style={styles.signOutButton}>
+            <Pressable testID="sign-out-button" onPress={() => void signOut()} style={styles.signOutButton}>
               <Text style={styles.signOutText}>Sign out</Text>
             </Pressable>
           </View>
@@ -92,7 +92,7 @@ export function EventsScreen() {
             ))}
 
             {isDemoMode ? (
-              <View style={styles.demoBadge}>
+              <View testID="demo-mode-badge" style={styles.demoBadge}>
                 <Text style={styles.demoBadgeText}>Demo mode</Text>
               </View>
             ) : null}
@@ -100,18 +100,40 @@ export function EventsScreen() {
         </View>
 
         <View style={styles.tabRow}>
-          <TabButton label="Discover" isActive={activeTab === 'discover'} onPress={() => handleTabChange('discover')} />
-          <TabButton label="Cart" isActive={activeTab === 'cart'} onPress={() => handleTabChange('cart')} count={cartItemCount} />
-          <TabButton label="Tickets" isActive={activeTab === 'tickets'} onPress={() => handleTabChange('tickets')} count={tickets.length} />
+          <TabButton
+            label="Discover"
+            isActive={activeTab === 'discover'}
+            onPress={() => handleTabChange('discover')}
+            testID="tab-discover"
+          />
+          <TabButton
+            label="Cart"
+            isActive={activeTab === 'cart'}
+            onPress={() => handleTabChange('cart')}
+            count={cartItemCount}
+            testID="tab-cart"
+          />
+          <TabButton
+            label="Tickets"
+            isActive={activeTab === 'tickets'}
+            onPress={() => handleTabChange('tickets')}
+            count={tickets.length}
+            testID="tab-tickets"
+          />
           {canValidateTickets ? (
-            <TabButton label="Scanner" isActive={activeTab === 'scanner'} onPress={() => handleTabChange('scanner')} />
+            <TabButton
+              label="Scanner"
+              isActive={activeTab === 'scanner'}
+              onPress={() => handleTabChange('scanner')}
+              testID="tab-scanner"
+            />
           ) : null}
         </View>
 
-        {banner ? <BannerCard tone={banner.tone} message={banner.message} /> : null}
+        {banner ? <BannerCard testID="app-banner" tone={banner.tone} message={banner.message} /> : null}
 
         {isBootstrapping ? (
-          <View style={styles.loadingCard}>
+          <View testID="events-loading-state" style={styles.loadingCard}>
             <ActivityIndicator color="#f0b35c" size="large" />
             <Text style={styles.loadingLabel}>Loading event inventory, cart and tickets...</Text>
           </View>

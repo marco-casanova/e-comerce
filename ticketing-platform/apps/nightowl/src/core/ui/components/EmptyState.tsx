@@ -1,8 +1,16 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-export function EmptyState({ title, description }: { title: string; description: string }) {
+export function EmptyState({
+  title,
+  description,
+  testID,
+}: {
+  title: string;
+  description: string;
+  testID?: string;
+}) {
   return (
-    <View style={styles.emptyState}>
+    <View testID={testID} style={styles.emptyState}>
       <Text style={styles.emptyStateTitle}>{title}</Text>
       <Text style={styles.emptyStateDescription}>{description}</Text>
     </View>

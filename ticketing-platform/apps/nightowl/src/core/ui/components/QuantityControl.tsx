@@ -5,19 +5,33 @@ export function QuantityControl({
   onDecrease,
   onIncrease,
   disabled,
+  testIDPrefix,
 }: {
   quantity: number;
   onDecrease: () => void;
   onIncrease: () => void;
   disabled?: boolean;
+  testIDPrefix?: string;
 }) {
   return (
-    <View style={styles.quantityControl}>
-      <Pressable onPress={onDecrease} disabled={disabled} style={styles.quantityButton}>
+    <View testID={testIDPrefix ? `${testIDPrefix}-control` : undefined} style={styles.quantityControl}>
+      <Pressable
+        testID={testIDPrefix ? `${testIDPrefix}-decrease` : undefined}
+        onPress={onDecrease}
+        disabled={disabled}
+        style={styles.quantityButton}
+      >
         <Text style={styles.quantityButtonText}>-</Text>
       </Pressable>
-      <Text style={styles.quantityValue}>{quantity}</Text>
-      <Pressable onPress={onIncrease} disabled={disabled} style={styles.quantityButton}>
+      <Text testID={testIDPrefix ? `${testIDPrefix}-value` : undefined} style={styles.quantityValue}>
+        {quantity}
+      </Text>
+      <Pressable
+        testID={testIDPrefix ? `${testIDPrefix}-increase` : undefined}
+        onPress={onIncrease}
+        disabled={disabled}
+        style={styles.quantityButton}
+      >
         <Text style={styles.quantityButtonText}>+</Text>
       </Pressable>
     </View>

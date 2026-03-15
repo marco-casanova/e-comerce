@@ -41,6 +41,11 @@ export const API_MAX_RETRIES =
 
 export const APP_ENV = readPublicEnv('EXPO_PUBLIC_APP_ENV') ?? (__DEV__ ? 'development' : 'production');
 
+export const IS_E2E_MODE =
+  readParsedPublicEnv('EXPO_PUBLIC_E2E_MODE', {
+    parse: parseBoolean,
+  }) ?? APP_ENV === 'e2e';
+
 export const ENABLE_VERBOSE_LOGS =
   readParsedPublicEnv('EXPO_PUBLIC_ENABLE_VERBOSE_LOGS', {
     defaultValue: __DEV__,

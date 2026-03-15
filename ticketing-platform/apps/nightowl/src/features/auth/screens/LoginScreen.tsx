@@ -28,13 +28,14 @@ export function LoginScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <View testID="login-screen" style={styles.container}>
       <Text accessibilityRole="header" style={styles.title}>
         Login
       </Text>
 
       <TextInput
         accessibilityLabel="Email"
+        testID="login-email-input"
         autoCapitalize="none"
         autoComplete="email"
         autoCorrect={false}
@@ -52,6 +53,7 @@ export function LoginScreen() {
       <TextInput
         ref={passwordRef}
         accessibilityLabel="Password"
+        testID="login-password-input"
         autoComplete="password"
         placeholder="Password"
         placeholderTextColor="#7a8599"
@@ -65,7 +67,7 @@ export function LoginScreen() {
       />
 
       {errorMessage ? (
-        <Text accessibilityRole="alert" style={styles.error}>
+        <Text accessibilityRole="alert" testID="login-error" style={styles.error}>
           {errorMessage}
         </Text>
       ) : null}
@@ -75,6 +77,7 @@ export function LoginScreen() {
         accessibilityRole="button"
         accessibilityState={{ disabled: isSubmitting }}
         disabled={isSubmitting}
+        testID="login-submit-button"
         style={[styles.button, isSubmitting && styles.buttonDisabled]}
         onPress={handleSubmit}
       >

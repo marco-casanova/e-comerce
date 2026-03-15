@@ -4,13 +4,16 @@ export function BannerCard({
   tone,
   message,
   compact,
+  testID,
 }: {
   tone: 'error' | 'success' | 'info';
   message: string;
   compact?: boolean;
+  testID?: string;
 }) {
   return (
     <View
+      testID={testID}
       style={[
         styles.banner,
         tone === 'error' ? styles.bannerError : null,
