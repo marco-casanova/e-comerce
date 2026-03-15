@@ -1,8 +1,8 @@
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
 import { useAuth } from '../core/auth/AuthProvider';
-import { LoginScreen } from '../features/auth/components/LoginScreen';
-import { EventsScreen } from '../features/events/components/EventsScreen';
+import { LoginScreen } from '../features/auth/screens/LoginScreen';
+import { EventsScreen } from '../features/events/screens/EventsScreen';
 
 export function RootNavigator() {
   const { isHydrating, session } = useAuth();

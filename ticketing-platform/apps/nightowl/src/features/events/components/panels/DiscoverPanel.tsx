@@ -1,8 +1,9 @@
 import { ActivityIndicator, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 
+import { EmptyState } from '../../../../core/ui/components';
 import type { EventAddOn, EventDetail, EventSummary, TicketType } from '../../types';
 import { formatCurrency, formatEventDateRange } from '../../utils';
-import { EmptyState, SellableCard } from '../EventUi';
+import { SellableCard } from '../EventUi';
 import { styles } from '../eventsScreenStyles';
 
 export function DiscoverPanel({

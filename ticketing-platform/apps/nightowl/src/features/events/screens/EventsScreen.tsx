@@ -1,11 +1,13 @@
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
 
-import { BannerCard, TabButton } from './EventUi';
-import { CartPanel } from './panels/CartPanel';
-import { DiscoverPanel } from './panels/DiscoverPanel';
-import { ScannerPanel } from './panels/ScannerPanel';
-import { TicketsPanel } from './panels/TicketsPanel';
-import { styles } from './eventsScreenStyles';
+import { BannerCard } from '../../../core/ui/components';
+import { CartFeature } from '../../cart/components/CartFeature';
+import { CheckoutFeature } from '../../checkout/components/CheckoutFeature';
+import { DiscoverFeature } from '../../discover/components/DiscoverFeature';
+import { ScannerFeature } from '../../scanner/components/ScannerFeature';
+import { TicketsFeature } from '../../tickets/components/TicketsFeature';
+import { TabButton } from '../components/EventUi';
+import { styles } from '../components/eventsScreenStyles';
 import { useEventsExperience } from '../hooks/useEventsExperience';
 
 export function EventsScreen() {
@@ -24,9 +26,8 @@ export function EventsScreen() {
     handleAddAddOn,
     handleAddTicket,
     handleCameraScan,
+    handleCheckout,
     handleClearCart,
-    handleCreateOrder,
-    handlePreparePayment,
     handleRefreshTickets,
     handleSelectEvent,
     handleSelectScannerEvent,
@@ -36,6 +37,7 @@ export function EventsScreen() {
     isBootstrapping,
     isCheckingCameraPermission,
     isDemoMode,
+    isPlatformWalletSupported,
     isStripeConfigured,
     loadingEventId,
     paymentIntent,
@@ -48,9 +50,11 @@ export function EventsScreen() {
     searchQuery,
     selectedEvent,
     selectedEventSummary,
+    selectedPaymentMethod,
     session,
     setScannerInput,
     setSearchQuery,
+    setSelectedPaymentMethod,
     signOut,
     tickets,
     updateDraftQuantity,
@@ -70,8 +74,8 @@ export function EventsScreen() {
               <Text style={styles.kicker}>Night Owl Mobile</Text>
               <Text style={styles.title}>Events, passes and door control in one flow.</Text>
               <Text style={styles.subtitle}>
-                Signed in as {session?.user.email}. Browse events, build the cart, prepare Stripe checkout, then show
-                the ticket pass at the door.
+                Signed in as {session?.user.email}. Browse events, build your cart, pay in one Stripe checkout flow,
+                then show the ticket pass at the door.
               </Text>
             </View>
 
@@ -114,13 +118,14 @@ export function EventsScreen() {
         ) : null}
 
         {!isBootstrapping && activeTab === 'discover' ? (
-          <DiscoverPanel
+          <DiscoverFeature
+            busyKey={busyKey}
             filteredEvents={filteredEvents}
             getCartQuantity={getCartQuantity}
             getDraftQuantity={getDraftQuantity}
             loadingEventId={loadingEventId}
-            onAddAddOn={(addOn) => void handleAddAddOn(addOn)}
-            onAddTicket={(ticketType) => void handleAddTicket(ticketType)}
+            onAddAddOn={handleAddAddOn}
+            onAddTicket={handleAddTicket}
             onDecreaseDraftQuantity={(itemId) => updateDraftQuantity(itemId, -1)}
             onIncreaseDraftQuantity={(itemId) => updateDraftQuantity(itemId, 1)}
             onSearchChange={setSearchQuery}
@@ -128,44 +133,51 @@ export function EventsScreen() {
             searchQuery={searchQuery}
             selectedEvent={selectedEvent}
             selectedEventSummary={selectedEventSummary}
-            busyKey={busyKey}
           />
         ) : null}
 
         {!isBootstrapping && activeTab === 'cart' ? (
-          <CartPanel
-            busyKey={busyKey}
-            cart={cart}
-            currentOrder={currentOrder}
-            onClearCart={() => void handleClearCart()}
-            onCreateOrder={() => void handleCreateOrder()}
-            onPreparePayment={() => void handlePreparePayment()}
-            onUpdateCartItem={(item, nextQuantity) => void handleUpdateCartItem(item, nextQuantity)}
-            isStripeConfigured={isStripeConfigured}
-            paymentIntent={paymentIntent}
-            visibleEvents={visibleEvents}
-          />
+          <>
+            <CheckoutFeature
+              busyKey={busyKey}
+              cart={cart}
+              currentOrder={currentOrder}
+              isPlatformWalletSupported={isPlatformWalletSupported}
+              isStripeConfigured={isStripeConfigured}
+              onCheckout={handleCheckout}
+              onSelectPaymentMethod={setSelectedPaymentMethod}
+              paymentIntent={paymentIntent}
+              selectedPaymentMethod={selectedPaymentMethod}
+            />
+            <CartFeature
+              busyKey={busyKey}
+              cart={cart}
+              onClearCart={handleClearCart}
+              onUpdateCartItem={handleUpdateCartItem}
+              visibleEvents={visibleEvents}
+            />
+          </>
         ) : null}
 
         {!isBootstrapping && activeTab === 'tickets' ? (
-          <TicketsPanel
+          <TicketsFeature
             busyKey={busyKey}
-            onRefreshTickets={() => void handleRefreshTickets()}
+            onRefreshTickets={handleRefreshTickets}
             tickets={tickets}
           />
         ) : null}
 
         {!isBootstrapping && activeTab === 'scanner' ? (
-          <ScannerPanel
+          <ScannerFeature
             busyKey={busyKey}
             cameraPermission={cameraPermission}
             isCheckingCameraPermission={isCheckingCameraPermission}
             onCameraScan={handleCameraScan}
-            onRequestCameraPermission={() => void requestCameraPermission()}
+            onRequestCameraPermission={requestCameraPermission}
             onResetScanner={resetScanner}
             onSelectScannerEvent={handleSelectScannerEvent}
             onSetScannerInput={setScannerInput}
-            onValidateScan={() => void handleValidateTicket()}
+            onValidateScan={handleValidateTicket}
             scanFeedback={scanFeedback}
             scannerCameraPaused={scannerCameraPaused}
             scannerEventId={scannerEventId}

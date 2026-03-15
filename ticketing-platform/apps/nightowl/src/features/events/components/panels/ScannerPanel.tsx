@@ -1,9 +1,9 @@
 import { CameraView } from 'expo-camera';
 import { ActivityIndicator, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 
+import { BannerCard } from '../../../../core/ui/components';
 import type { EventSummary } from '../../types';
-import type { BannerState, CameraPermissionState } from '../../hooks/useEventsExperience';
-import { BannerCard } from '../EventUi';
+import type { BannerState, CameraPermissionState } from '../../hooks/experienceTypes';
 import { styles } from '../eventsScreenStyles';
 
 function CameraScannerCard({

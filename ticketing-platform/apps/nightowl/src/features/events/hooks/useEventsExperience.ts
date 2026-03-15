@@ -1,44 +1,15 @@
-import { Camera } from 'expo-camera';
-import { PaymentSheetError, useStripe } from '@stripe/stripe-react-native';
 import { startTransition, useDeferredValue, useEffect, useState } from 'react';
 
 import { useAuth } from '../../../core/auth/AuthProvider';
 import { toAppError } from '../../../core/errors/appError';
-import {
-  isStripeConfigured,
-  STRIPE_MERCHANT_DISPLAY_NAME,
-  STRIPE_RETURN_URL,
-} from '../../../core/payments/stripeConfig';
+import { isStripeConfigured } from '../../../core/payments/stripeConfig';
+import { useCheckoutExperience } from '../../checkout/hooks/useCheckoutExperience';
+import { useScannerExperience } from '../../scanner/hooks/useScannerExperience';
 import { eventsApi } from '../api/eventsApi';
-import type { CartItem, EventAddOn, EventDetail, EventSummary, OrderSummary, PaymentIntentSummary, TicketPass, TicketType } from '../types';
-import { extractTicketIdFromPayload, formatShortDateTime } from '../utils';
+import type { CartItem, EventAddOn, EventDetail, EventSummary, TicketPass, TicketType } from '../types';
+import type { BannerState, BusyActionRunner, MessageTarget, ScreenTab } from './experienceTypes';
 
-export type ScreenTab = 'discover' | 'cart' | 'tickets' | 'scanner';
-
-export type BannerState = {
-  tone: 'error' | 'success' | 'info';
-  message: string;
-};
-
-export type CameraPermissionState = {
-  granted: boolean;
-  canAskAgain: boolean;
-};
-
-type CheckoutOutcome =
-  | 'paid'
-  | 'already_paid'
-  | 'canceled'
-  | 'stripe_not_configured'
-  | 'requires_external_confirmation';
-
-type CheckoutResult = {
-  paymentIntent: PaymentIntentSummary;
-  ticketSnapshot: TicketPass[] | null;
-  outcome: CheckoutOutcome;
-};
-
-type MessageTarget = 'banner' | 'scan';
+export type { BannerState, CameraPermissionState, CheckoutPaymentMethod, ScreenTab } from './experienceTypes';
 
 type BusyActionOptions<T> = {
   action: () => Promise<T>;
@@ -52,7 +23,6 @@ type BusyActionOptions<T> = {
 
 export function useEventsExperience() {
   const { session, signOut } = useAuth();
-  const { initPaymentSheet, presentPaymentSheet } = useStripe();
   const [activeTab, setActiveTab] = useState<ScreenTab>('discover');
   const [events, setEvents] = useState<EventSummary[]>([]);
   const [eventDetails, setEventDetails] = useState<Record<string, EventDetail>>({});
@@ -66,14 +36,6 @@ export function useEventsExperience() {
   const [banner, setBanner] = useState<BannerState | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [draftQuantities, setDraftQuantities] = useState<Record<string, number>>({});
-  const [currentOrder, setCurrentOrder] = useState<OrderSummary | null>(null);
-  const [paymentIntent, setPaymentIntent] = useState<PaymentIntentSummary | null>(null);
-  const [scannerEventId, setScannerEventId] = useState<string | null>(null);
-  const [scannerInput, setScannerInput] = useState('');
-  const [scanFeedback, setScanFeedback] = useState<BannerState | null>(null);
-  const [scannerCameraPaused, setScannerCameraPaused] = useState(false);
-  const [cameraPermission, setCameraPermission] = useState<CameraPermissionState | null>(null);
-  const [isCheckingCameraPermission, setIsCheckingCameraPermission] = useState(false);
   const deferredSearch = useDeferredValue(searchQuery);
 
   const userRoles = session?.user.roles ?? [];
@@ -117,11 +79,7 @@ export function useEventsExperience() {
         setSelectedEventId(visibleEvents[0].id);
       });
     }
-
-    if (!scannerEventId && visibleEvents[0]) {
-      setScannerEventId(visibleEvents[0].id);
-    }
-  }, [scannerEventId, selectedEventId, visibleEvents]);
+  }, [selectedEventId, visibleEvents]);
 
   useEffect(() => {
     if (selectedEventSummary && !eventDetails[selectedEventSummary.id] && loadingEventId !== selectedEventSummary.id) {
@@ -129,28 +87,20 @@ export function useEventsExperience() {
     }
   }, [eventDetails, loadingEventId, selectedEventSummary]);
 
-  useEffect(() => {
-    if (activeTab !== 'scanner' || !canValidateTickets || cameraPermission || isCheckingCameraPermission) {
-      return;
-    }
-
-    void hydrateCameraPermission();
-  }, [activeTab, cameraPermission, canValidateTickets, isCheckingCameraPermission]);
-
   function syncDemoMode() {
     setIsDemoMode(eventsApi.getDataSourceMode() === 'mock');
   }
 
   function setTargetMessage(target: MessageTarget, nextBanner: BannerState | null) {
     if (target === 'scan') {
-      setScanFeedback(nextBanner);
+      scanner.setScanFeedback(nextBanner);
       return;
     }
 
     setBanner(nextBanner);
   }
 
-  async function runBusyAction<T>({
+  const runBusyAction: BusyActionRunner = async <T,>({
     action,
     busyKey: nextBusyKey,
     errorTarget = 'banner',
@@ -158,7 +108,7 @@ export function useEventsExperience() {
     successMessage,
     successTarget = 'banner',
     successTone = 'success',
-  }: BusyActionOptions<T>) {
+  }: BusyActionOptions<T>) => {
     try {
       setBusyKey(nextBusyKey);
       const result = await action();
@@ -180,7 +130,24 @@ export function useEventsExperience() {
     } finally {
       setBusyKey(null);
     }
-  }
+  };
+
+  const checkout = useCheckoutExperience({
+    cart,
+    runBusyAction,
+    setBanner,
+    setCart,
+    setTickets,
+  });
+
+  const scanner = useScannerExperience({
+    activeTab,
+    busyKey,
+    canValidateTickets,
+    runBusyAction,
+    setTickets,
+    visibleEvents,
+  });
 
   async function bootstrapExperience() {
     setIsBootstrapping(true);
@@ -239,45 +206,6 @@ export function useEventsExperience() {
     }
   }
 
-  async function hydrateCameraPermission() {
-    try {
-      setIsCheckingCameraPermission(true);
-      const permission = await Camera.getCameraPermissionsAsync();
-      setCameraPermission({
-        granted: permission.granted,
-        canAskAgain: permission.canAskAgain,
-      });
-    } catch (error) {
-      setScanFeedback({ tone: 'error', message: toAppError(error).message });
-    } finally {
-      setIsCheckingCameraPermission(false);
-    }
-  }
-
-  async function requestCameraPermission() {
-    try {
-      setIsCheckingCameraPermission(true);
-      const permission = await Camera.requestCameraPermissionsAsync();
-      setCameraPermission({
-        granted: permission.granted,
-        canAskAgain: permission.canAskAgain,
-      });
-
-      if (!permission.granted) {
-        setScanFeedback({
-          tone: 'info',
-          message: permission.canAskAgain
-            ? 'Camera access is still disabled. Allow it to scan tickets live.'
-            : 'Camera access is blocked. Enable it from iOS Settings to scan tickets live.',
-        });
-      }
-    } catch (error) {
-      setScanFeedback({ tone: 'error', message: toAppError(error).message });
-    } finally {
-      setIsCheckingCameraPermission(false);
-    }
-  }
-
   function updateDraftQuantity(itemId: string, delta: number) {
     setDraftQuantities((current) => {
       const nextValue = Math.max(1, (current[itemId] ?? 1) + delta);
@@ -333,152 +261,10 @@ export function useEventsExperience() {
       action: () => eventsApi.clearCart(),
       onSuccess: (nextCart) => {
         setCart(nextCart);
-        setCurrentOrder(null);
-        setPaymentIntent(null);
+        checkout.resetCheckoutState();
       },
       successMessage: 'Cart cleared.',
       successTone: 'info',
-    });
-  }
-
-  async function handleCreateOrder() {
-    await runBusyAction({
-      busyKey: 'checkout:create-order',
-      action: async () => {
-        const order = await eventsApi.createOrderFromCart();
-        const nextCart = await eventsApi.getCart();
-        return { order, nextCart };
-      },
-      onSuccess: ({ order, nextCart }) => {
-        setCurrentOrder(order);
-        setPaymentIntent(null);
-        setCart(nextCart);
-      },
-      successMessage: 'Order created. Prepare the Stripe payment intent next.',
-    });
-  }
-
-  async function handlePreparePayment() {
-    if (!currentOrder) {
-      return;
-    }
-
-    await runBusyAction({
-      busyKey: 'checkout:payment-intent',
-      action: async () => {
-        const nextPaymentIntent = await eventsApi.createPaymentIntent(currentOrder.id);
-
-        if (nextPaymentIntent.status === 'already_paid') {
-          const nextTickets = await eventsApi.listTickets();
-          return {
-            paymentIntent: nextPaymentIntent,
-            ticketSnapshot: nextTickets,
-            outcome: 'already_paid',
-          } satisfies CheckoutResult;
-        }
-
-        if (!nextPaymentIntent.clientSecret) {
-          throw new Error('Stripe payment intent is missing a client secret.');
-        }
-
-        if (eventsApi.getDataSourceMode() === 'mock') {
-          return {
-            paymentIntent: nextPaymentIntent,
-            ticketSnapshot: null,
-            outcome: 'requires_external_confirmation',
-          } satisfies CheckoutResult;
-        }
-
-        if (!isStripeConfigured) {
-          return {
-            paymentIntent: nextPaymentIntent,
-            ticketSnapshot: null,
-            outcome: 'stripe_not_configured',
-          } satisfies CheckoutResult;
-        }
-
-        const paymentSheetConfig: Parameters<typeof initPaymentSheet>[0] =
-          nextPaymentIntent.customerId && nextPaymentIntent.customerEphemeralKeySecret
-            ? {
-                merchantDisplayName: STRIPE_MERCHANT_DISPLAY_NAME,
-                paymentIntentClientSecret: nextPaymentIntent.clientSecret,
-                customerId: nextPaymentIntent.customerId,
-                customerEphemeralKeySecret: nextPaymentIntent.customerEphemeralKeySecret,
-                returnURL: STRIPE_RETURN_URL,
-              }
-            : {
-                merchantDisplayName: STRIPE_MERCHANT_DISPLAY_NAME,
-                paymentIntentClientSecret: nextPaymentIntent.clientSecret,
-                returnURL: STRIPE_RETURN_URL,
-              };
-
-        const initResult = await initPaymentSheet(paymentSheetConfig);
-
-        if (initResult.error) {
-          throw new Error(initResult.error.message);
-        }
-
-        const paymentResult = await presentPaymentSheet();
-        if (paymentResult.error) {
-          if (paymentResult.error.code === PaymentSheetError.Canceled) {
-            return {
-              paymentIntent: nextPaymentIntent,
-              ticketSnapshot: null,
-              outcome: 'canceled',
-            } satisfies CheckoutResult;
-          }
-
-          throw new Error(paymentResult.error.message);
-        }
-
-        const nextTickets = await eventsApi.listTickets();
-        return {
-          paymentIntent: nextPaymentIntent,
-          ticketSnapshot: nextTickets,
-          outcome: 'paid',
-        } satisfies CheckoutResult;
-      },
-      onSuccess: (checkoutResult) => {
-        setPaymentIntent(checkoutResult.paymentIntent);
-
-        if (checkoutResult.ticketSnapshot) {
-          setTickets(checkoutResult.ticketSnapshot);
-        }
-
-        if (checkoutResult.outcome === 'paid') {
-          setBanner({
-            tone: 'success',
-            message:
-              'Payment confirmed in Stripe. If passes are still processing, refresh the ticket wallet in a few seconds.',
-          });
-          return;
-        }
-
-        if (checkoutResult.outcome === 'already_paid') {
-          setBanner({ tone: 'info', message: 'Order is already paid. Ticket wallet refreshed.' });
-          return;
-        }
-
-        if (checkoutResult.outcome === 'canceled') {
-          setBanner({ tone: 'info', message: 'Stripe checkout was canceled. You can retry payment anytime.' });
-          return;
-        }
-
-        if (checkoutResult.outcome === 'stripe_not_configured') {
-          setBanner({
-            tone: 'info',
-            message:
-              'Payment intent is ready. Set EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY to complete card checkout inside the app.',
-          });
-          return;
-        }
-
-        setBanner({
-          tone: 'info',
-          message:
-            'Stripe payment intent created. Demo mode cannot confirm real cards, so complete payment via your webhook test flow.',
-        });
-      },
     });
   }
 
@@ -491,51 +277,6 @@ export function useEventsExperience() {
     });
   }
 
-  function resetScanner() {
-    setScannerCameraPaused(false);
-    setScannerInput('');
-    setScanFeedback(null);
-  }
-
-  async function handleValidateTicket(rawInput = scannerInput) {
-    const ticketId = extractTicketIdFromPayload(rawInput.trim());
-
-    if (!ticketId || !scannerEventId) {
-      setScanFeedback({ tone: 'error', message: 'Paste a valid ticket payload or ticket id first.' });
-      return;
-    }
-
-    await runBusyAction({
-      busyKey: 'scanner:validate',
-      errorTarget: 'scan',
-      action: async () => {
-        const result = await eventsApi.validateTicketScan(ticketId, scannerEventId);
-        const nextTickets = await eventsApi.listTickets();
-        return { result, nextTickets };
-      },
-      onSuccess: ({ result, nextTickets }) => {
-        setScanFeedback({
-          tone: 'success',
-          message: `Ticket ${result.ticket.id.slice(0, 8)} validated. Entry open until ${formatShortDateTime(
-            result.ticket.windowClosesAt,
-          )}.`,
-        });
-        setScannerInput(rawInput);
-        setTickets(nextTickets);
-      },
-    });
-  }
-
-  function handleCameraScan(payload: string) {
-    if (scannerCameraPaused || busyKey === 'scanner:validate') {
-      return;
-    }
-
-    setScannerCameraPaused(true);
-    setScannerInput(payload);
-    void handleValidateTicket(payload);
-  }
-
   function handleSelectEvent(eventId: string) {
     startTransition(() => {
       setSelectedEventId(eventId);
@@ -543,27 +284,23 @@ export function useEventsExperience() {
     });
   }
 
-  function handleSelectScannerEvent(eventId: string) {
-    setScannerEventId(eventId);
-    setScanFeedback(null);
-  }
-
   function handleTabChange(nextTab: ScreenTab) {
     setActiveTab(nextTab);
 
     if (nextTab === 'scanner') {
-      setScannerCameraPaused(false);
+      scanner.resumeScannerCamera();
     }
   }
 
   return {
     activeTab,
     banner,
-    cameraPermission,
+    busyKey,
+    cameraPermission: scanner.cameraPermission,
     canValidateTickets,
     cart,
     cartItemCount,
-    currentOrder,
+    currentOrder: checkout.currentOrder,
     eventDetails,
     events,
     filteredEvents,
@@ -571,40 +308,41 @@ export function useEventsExperience() {
     getDraftQuantity,
     handleAddAddOn,
     handleAddTicket,
-    handleCameraScan,
+    handleCameraScan: scanner.handleCameraScan,
+    handleCheckout: checkout.handleCheckout,
     handleClearCart,
-    handleCreateOrder,
-    handlePreparePayment,
     handleRefreshTickets,
     handleSelectEvent,
-    handleSelectScannerEvent,
+    handleSelectScannerEvent: scanner.handleSelectScannerEvent,
     handleTabChange,
     handleUpdateCartItem,
-    handleValidateTicket,
+    handleValidateTicket: scanner.handleValidateTicket,
     isBootstrapping,
-    isCheckingCameraPermission,
+    isCheckingCameraPermission: scanner.isCheckingCameraPermission,
     isDemoMode,
+    isPlatformWalletSupported: checkout.isPlatformWalletSupported,
     isStripeConfigured,
     loadingEventId,
-    paymentIntent,
-    requestCameraPermission,
-    resetScanner,
-    scanFeedback,
-    scannerCameraPaused,
-    scannerEventId,
-    scannerInput,
+    paymentIntent: checkout.paymentIntent,
+    requestCameraPermission: scanner.requestCameraPermission,
+    resetScanner: scanner.resetScanner,
+    scanFeedback: scanner.scanFeedback,
+    scannerCameraPaused: scanner.scannerCameraPaused,
+    scannerEventId: scanner.scannerEventId,
+    scannerInput: scanner.scannerInput,
     searchQuery,
     selectedEvent,
     selectedEventSummary,
+    selectedPaymentMethod: checkout.selectedPaymentMethod,
     session,
-    setScannerInput,
+    setScannerInput: scanner.setScannerInput,
     setSearchQuery,
-    setScanFeedback,
+    setSelectedPaymentMethod: checkout.setSelectedPaymentMethod,
+    setScanFeedback: scanner.setScanFeedback,
     signOut,
     tickets,
     updateDraftQuantity,
     userRoles,
     visibleEvents,
-    busyKey,
   };
 }

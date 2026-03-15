@@ -1,8 +1,9 @@
 import { Pressable, Text, View } from 'react-native';
 
+import { EmptyState, SummaryRow } from '../../../../core/ui/components';
 import type { TicketPass } from '../../types';
 import { buildEntryPayload, formatEventDateRange, formatShortDateTime } from '../../utils';
-import { EmptyState, PassMatrix, SummaryRow } from '../EventUi';
+import { PassMatrix } from '../EventUi';
 import { styles } from '../eventsScreenStyles';
 
 export function TicketsPanel({

@@ -410,6 +410,57 @@ export const styles = StyleSheet.create({
     gap: 10,
     padding: 16,
   },
+  checkoutAmountCard: {
+    backgroundColor: '#20314a',
+    borderColor: '#2f4a70',
+    borderRadius: 18,
+    borderWidth: 1,
+    gap: 10,
+    padding: 16,
+  },
+  checkoutAmountLabel: {
+    color: '#bcc8dc',
+    fontSize: 13,
+    fontWeight: '700',
+    letterSpacing: 0.4,
+    textTransform: 'uppercase',
+  },
+  checkoutAmountValue: {
+    color: '#f4cc8b',
+    fontSize: 32,
+    fontWeight: '900',
+    lineHeight: 36,
+  },
+  checkoutMethodRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  checkoutMethodChip: {
+    backgroundColor: '#16253a',
+    borderColor: '#2a3f60',
+    borderRadius: 999,
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  checkoutMethodChipActive: {
+    backgroundColor: '#f0b35c',
+    borderColor: '#f0b35c',
+  },
+  checkoutMethodChipText: {
+    color: '#d7ddeb',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  checkoutMethodChipTextActive: {
+    color: '#0b1220',
+  },
+  checkoutHelperText: {
+    color: '#9eb1cd',
+    fontSize: 12,
+    lineHeight: 18,
+  },
   cartItemCard: {
     alignItems: 'center',
     backgroundColor: '#17253a',

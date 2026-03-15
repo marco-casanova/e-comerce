@@ -1,7 +1,13 @@
 import { Pressable, Text, View } from 'react-native';
 
+import { QuantityControl } from '../../../core/ui/components/QuantityControl';
 import { buildPassMatrix } from '../utils';
 import { styles } from './eventsScreenStyles';
+
+export { BannerCard } from '../../../core/ui/components/BannerCard';
+export { EmptyState } from '../../../core/ui/components/EmptyState';
+export { QuantityControl } from '../../../core/ui/components/QuantityControl';
+export { SummaryRow } from '../../../core/ui/components/SummaryRow';
 
 export function TabButton({
   label,
@@ -21,53 +27,6 @@ export function TabButton({
         {typeof count === 'number' ? ` ${count}` : ''}
       </Text>
     </Pressable>
-  );
-}
-
-export function BannerCard({
-  tone,
-  message,
-  compact,
-}: {
-  tone: 'error' | 'success' | 'info';
-  message: string;
-  compact?: boolean;
-}) {
-  return (
-    <View
-      style={[
-        styles.banner,
-        tone === 'error' ? styles.bannerError : null,
-        tone === 'success' ? styles.bannerSuccess : null,
-        compact ? styles.bannerCompact : null,
-      ]}
-    >
-      <Text style={styles.bannerText}>{message}</Text>
-    </View>
-  );
-}
-
-export function QuantityControl({
-  quantity,
-  onDecrease,
-  onIncrease,
-  disabled,
-}: {
-  quantity: number;
-  onDecrease: () => void;
-  onIncrease: () => void;
-  disabled?: boolean;
-}) {
-  return (
-    <View style={styles.quantityControl}>
-      <Pressable onPress={onDecrease} disabled={disabled} style={styles.quantityButton}>
-        <Text style={styles.quantityButtonText}>-</Text>
-      </Pressable>
-      <Text style={styles.quantityValue}>{quantity}</Text>
-      <Pressable onPress={onIncrease} disabled={disabled} style={styles.quantityButton}>
-        <Text style={styles.quantityButtonText}>+</Text>
-      </Pressable>
-    </View>
   );
 }
 
@@ -126,24 +85,6 @@ export function SellableCard({
           <Text style={styles.primaryButtonText}>{busy ? 'Adding...' : actionLabel}</Text>
         </Pressable>
       </View>
-    </View>
-  );
-}
-
-export function EmptyState({ title, description }: { title: string; description: string }) {
-  return (
-    <View style={styles.emptyState}>
-      <Text style={styles.emptyStateTitle}>{title}</Text>
-      <Text style={styles.emptyStateDescription}>{description}</Text>
-    </View>
-  );
-}
-
-export function SummaryRow({ label, value, emphasis }: { label: string; value: string; emphasis?: boolean }) {
-  return (
-    <View style={styles.summaryRow}>
-      <Text style={styles.summaryLabel}>{label}</Text>
-      <Text style={[styles.summaryValue, emphasis ? styles.summaryValueEmphasis : null]}>{value}</Text>
     </View>
   );
 }
