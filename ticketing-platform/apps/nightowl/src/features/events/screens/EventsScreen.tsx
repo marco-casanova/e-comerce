@@ -10,6 +10,17 @@ import { TabButton } from '../components/EventUi';
 import { styles } from '../components/eventsScreenStyles';
 import { useEventsExperience } from '../hooks/useEventsExperience';
 
+function CartGlyph({ color }: { color: string }) {
+  return (
+    <View style={styles.cartGlyph}>
+      <View style={[styles.cartGlyphHandle, { backgroundColor: color }]} />
+      <View style={[styles.cartGlyphBasket, { borderColor: color }]} />
+      <View style={[styles.cartGlyphWheel, styles.cartGlyphWheelLeft, { borderColor: color }]} />
+      <View style={[styles.cartGlyphWheel, styles.cartGlyphWheelRight, { borderColor: color }]} />
+    </View>
+  );
+}
+
 export function EventsScreen() {
   const {
     activeTab,
@@ -61,6 +72,10 @@ export function EventsScreen() {
     userRoles,
     visibleEvents,
   } = useEventsExperience();
+  const cartBadgeText = cartItemCount > 99 ? '99+' : String(cartItemCount);
+  const cartAccessibilityLabel =
+    cartItemCount === 0 ? 'Open cart' : `Open cart. ${cartItemCount} ${cartItemCount === 1 ? 'item' : 'items'}`;
+  const cartIconColor = activeTab === 'cart' ? '#0b1220' : '#ffffff';
 
   return (
     <View testID="events-screen" style={styles.screen}>
@@ -74,18 +89,38 @@ export function EventsScreen() {
       >
         <View testID="events-hero" style={styles.heroCard}>
           <View style={styles.heroHeader}>
-            <View style={styles.heroCopy}>
-              <Text style={styles.kicker}>Night Owl Mobile</Text>
-              <Text style={styles.title}>Events, passes and door control in one flow.</Text>
-              <Text style={styles.subtitle}>
-                Signed in as {session?.user.email}. Browse events, build your cart, pay in one Stripe checkout flow,
-                then show the ticket pass at the door.
-              </Text>
-            </View>
+            <Text style={styles.kicker}>Night Owl Mobile</Text>
 
-            <Pressable testID="sign-out-button" onPress={() => void signOut()} style={styles.signOutButton}>
-              <Text style={styles.signOutText}>Sign out</Text>
-            </Pressable>
+            <View style={styles.heroActions}>
+              <Pressable
+                accessibilityLabel={cartAccessibilityLabel}
+                accessibilityRole="button"
+                accessibilityState={{ selected: activeTab === 'cart' }}
+                onPress={() => handleTabChange('cart')}
+                style={[styles.cartIconButton, activeTab === 'cart' ? styles.cartIconButtonActive : null]}
+                testID="tab-cart"
+              >
+                <CartGlyph color={cartIconColor} />
+
+                {cartItemCount > 0 ? (
+                  <View style={styles.cartBadge} testID="cart-button-badge">
+                    <Text style={styles.cartBadgeText}>{cartBadgeText}</Text>
+                  </View>
+                ) : null}
+              </Pressable>
+
+              <Pressable testID="sign-out-button" onPress={() => void signOut()} style={styles.signOutButton}>
+                <Text style={styles.signOutText}>Sign out</Text>
+              </Pressable>
+            </View>
+          </View>
+
+          <View style={styles.heroCopy}>
+            <Text style={styles.title}>Events, passes and door control in one flow.</Text>
+            <Text style={styles.subtitle}>
+              Signed in as {session?.user.email}. Browse events, build your cart, pay in one Stripe checkout flow,
+              then show the ticket pass at the door.
+            </Text>
           </View>
 
           <View style={styles.roleRow}>
@@ -109,13 +144,6 @@ export function EventsScreen() {
             isActive={activeTab === 'discover'}
             onPress={() => handleTabChange('discover')}
             testID="tab-discover"
-          />
-          <TabButton
-            label="Cart"
-            isActive={activeTab === 'cart'}
-            onPress={() => handleTabChange('cart')}
-            count={cartItemCount}
-            testID="tab-cart"
           />
           <TabButton
             label="Tickets"

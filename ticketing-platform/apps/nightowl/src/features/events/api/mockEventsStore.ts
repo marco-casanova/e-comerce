@@ -19,6 +19,10 @@ type MockOrderRecord = {
   paymentIntentId: string;
 };
 
+const ENTRY_OPENS_BEFORE_START_MINUTES = 120;
+const ENTRY_CLOSES_AFTER_END_MINUTES = 60;
+const ENTRY_CLOSES_AFTER_START_MINUTES = 360;
+
 let nextSequence = 1000;
 
 function createUuid() {
@@ -32,6 +36,20 @@ function cloneValue<T>(value: T): T {
 
 function isoDate(date: string, time: string) {
   return `${date}T${time}:00.000Z`;
+}
+
+function buildEntryWindow(startsAt: string, endsAt: string | null) {
+  const eventStartsAt = new Date(startsAt);
+  const eventEndsAt = endsAt ? new Date(endsAt) : null;
+  const windowOpensAt = new Date(eventStartsAt.getTime() - ENTRY_OPENS_BEFORE_START_MINUTES * 60 * 1000);
+  const windowClosesAt = eventEndsAt
+    ? new Date(eventEndsAt.getTime() + ENTRY_CLOSES_AFTER_END_MINUTES * 60 * 1000)
+    : new Date(eventStartsAt.getTime() + ENTRY_CLOSES_AFTER_START_MINUTES * 60 * 1000);
+
+  return {
+    windowOpensAt,
+    windowClosesAt,
+  };
 }
 
 function createTicketType(eventId: string, name: string, priceCents: number, totalQuantity: number, description: string) {
@@ -69,8 +87,8 @@ function buildMockEvents() {
       title: 'Warehouse Pulse',
       description: 'A late-night industrial set with laser tunnels, hard groove rooms and an all-night coffee bar.',
       venue: 'Black Lantern Depot',
-      startsAt: isoDate('2026-03-06', '20:00'),
-      endsAt: isoDate('2026-03-07', '03:00'),
+      startsAt: isoDate('2026-03-17', '08:00'),
+      endsAt: isoDate('2026-03-18', '01:00'),
       capacity: 420,
       ticketCopy: 'Fast-lane entry with warehouse floor access.',
       merchCopy: 'Heavy cotton black tee with reflective lineup print.',
@@ -464,6 +482,36 @@ export function validateMockTicketScan(ticketId: string, eventId: string) {
     });
   }
 
+  const event = findEventById(ticket.eventId);
+  const scanTimestamp = new Date();
+  const { windowOpensAt, windowClosesAt } = buildEntryWindow(event.startsAt, event.endsAt);
+
+  if (scanTimestamp < windowOpensAt) {
+    throw new AppError({
+      message: 'Ticket is too early for entry',
+      code: 'SCAN_TOO_EARLY',
+      statusCode: 409,
+      details: {
+        windowOpensAt: windowOpensAt.toISOString(),
+        windowClosesAt: windowClosesAt.toISOString(),
+        scanTimestamp: scanTimestamp.toISOString(),
+      },
+    });
+  }
+
+  if (scanTimestamp > windowClosesAt) {
+    throw new AppError({
+      message: 'Ticket is too late for entry',
+      code: 'SCAN_TOO_LATE',
+      statusCode: 409,
+      details: {
+        windowOpensAt: windowOpensAt.toISOString(),
+        windowClosesAt: windowClosesAt.toISOString(),
+        scanTimestamp: scanTimestamp.toISOString(),
+      },
+    });
+  }
+
   const usedAt = new Date().toISOString();
   ticket.status = 'used';
   ticket.usedAt = usedAt;
@@ -476,8 +524,8 @@ export function validateMockTicketScan(ticketId: string, eventId: string) {
       userId: 'mock-user',
       status: ticket.status,
       usedAt,
-      windowOpensAt: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
-      windowClosesAt: new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString(),
+      windowOpensAt: windowOpensAt.toISOString(),
+      windowClosesAt: windowClosesAt.toISOString(),
     },
   } satisfies ScanValidationResult);
 }

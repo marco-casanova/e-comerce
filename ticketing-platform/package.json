@@ -9,7 +9,10 @@
     "typecheck": "turbo run typecheck",
     "lint": "turbo run lint",
     "test": "turbo run test",
-    "migrate": "pnpm --filter @ticketing/db migrate"
+    "migrate": "pnpm --filter @ticketing/db migrate",
+    "e2e:build:ios": "pnpm --filter nightowl e2e:build:ios",
+    "e2e:test:ios": "pnpm --filter nightowl e2e:test:ios",
+    "e2e:test:ios:headed": "pnpm --filter nightowl e2e:test:ios:headed"
   },
   "devDependencies": {
     "@types/node": "^24.5.2",

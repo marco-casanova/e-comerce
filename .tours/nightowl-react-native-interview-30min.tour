@@ -1,0 +1,401 @@
+{
+  "$schema": "https://aka.ms/codetour-schema",
+  "title": "Night Owl React Native Interview Tour 30 Min",
+  "description": "A modular 30-minute English tour with many smaller click stops. The wording is designed to sound natural in an interview while staying close to the code.",
+  "steps": [
+    {
+      "title": "Module 1.2 - The navigator only chooses the right entry",
+      "file": "ticketing-platform/apps/nightowl/src/app/RootNavigator.tsx",
+      "line": 10,
+      "description": " `RootNavigator` makes one simple product decision, whether the app is still hydrating(means the auth state is still being restored from persistent storage (e.g., SecureStore, AsyncStorage, or a token cache) Without this check, the app would briefly flash the LoginScreen before the stored token is loaded., whether the user should see login, or whether they can go straight into the main app. Why this way: I did not want heavy navigation logic here. Trade-off: the real feature logic lives elsewhere."
+    },
+    {
+      "title": "Module 1.1 - Start at the top",
+      "file": "ticketing-platform/apps/nightowl/src/app/AppRoot.tsx",
+      "line": 7,
+      "description": "I start in `AppRoot` because it shows the app from the outside in. The file is intentionally quiet and small, and that is the point: it immediately shows the high-level structure. `AppProviders` wraps the global app concerns, `SafeAreaView` gives the app a safe layout boundary on mobile devices, and `RootNavigator` decides whether the user should see login or the main experience. Why this way: the entrypoint should explain the shape of the app before we go into details. Trade-off: after this, we jump into other files quickly."
+    },
+    {
+      "title": "Module 1.3 - Auth gate instead of complicated startup logic",
+      "file": "ticketing-platform/apps/nightowl/src/app/RootNavigator.tsx",
+      "line": 19,
+      "description": "if there is no session, I render `LoginScreen`; otherwise I render `EventsScreen`. It sounds simple, and it is intentionally simple. Why this way: a clear auth gate is easier to test and easier to explain. Alternative: I could have pushed more routing rules here, but I wanted to keep it lean."
+    },
+    {
+      "title": "Module 1.4 - Put app-wide concerns in one place",
+      "file": "ticketing-platform/apps/nightowl/src/app/AppProviders.tsx",
+      "line": 16,
+      "description": "This is how I frame it: `AppProviders` collects what truly belongs to the whole app. Features do not need to know how auth, Stripe, or error boundaries are initialized. Why this way: I wanted cross-cutting concerns centralized. Trade-off: this file visibly carries some responsibility.\n\nchildren = It's whatever you put between the opening and closing tags.\n\nPropsWithChildren =  just TypeScript saying \"this component accepts children\".",
+      "selection": {
+        "start": {
+          "line": 17,
+          "character": 1
+        },
+        "end": {
+          "line": 18,
+          "character": 1
+        }
+      }
+    },
+    {
+      "title": "Module 1.5 - Initialize observability early",
+      "file": "ticketing-platform/apps/nightowl/src/app/AppProviders.tsx",
+      "line": 20,
+      "description": " I initialize observability early because in mobile apps I do not want to wait until something breaks to realize I have no context. Why this way: login, deep links, and payments are all places where early logging helps. Trade-off: part of bootstrap is technical and not directly user-facing."
+    },
+    {
+      "title": "Module 1.6 - Bootstrap logging with context",
+      "file": "ticketing-platform/apps/nightowl/src/app/AppProviders.tsx",
+      "line": 23,
+      "description": "At startup I log `appEnv`, `apiBaseUrl`, and the observability provider on purpose. That helps locally, in demo situations, and later in operations. Why this way: I wanted to own diagnostics and runtime visibility, not just UI behavior. Next step later: even stronger correlation between mobile and backend logs."
+    },
+    {
+      "title": "Module 1.7 - Read runtime mode before normal render",
+      "file": "ticketing-platform/apps/nightowl/src/app/AppProviders.tsx",
+      "line": 37,
+      "description": " before the app renders normally, I sync the runtime mode from the initial URL path. Why this way: I wanted to avoid the app starting normally and then flipping into demo or E2E mode later. Trade-off: there is one extra bootstrap state."
+    },
+    {
+      "title": "Module 1.8 - Handle later deep links too",
+      "file": "ticketing-platform/apps/nightowl/src/app/AppProviders.tsx",
+      "line": 52,
+      "description": "My line here is: I do not only care about the first URL on startup, I also listen for later incoming URLs. Why this way: deep links and test flows should stay robust throughout the app lifecycle. Trade-off: one more listener means a little more lifecycle complexity."
+    },
+    {
+      "title": "Module 1.9 - Why Stripe sits at app level",
+      "file": "ticketing-platform/apps/nightowl/src/app/AppProviders.tsx",
+      "line": 64,
+      "description": "I explain it like this: Stripe is not buried deep inside a checkout screen, it is wired at app level. Why this way: I wanted the payment infrastructure set up once, cleanly and globally, rather than hidden inside one feature. Trade-off: Stripe becomes an explicit global app dependency."
+    },
+    {
+      "title": "Module 1.10 - Error boundary as the last seatbelt",
+      "file": "ticketing-platform/apps/nightowl/src/core/errors/AppErrorBoundary.tsx",
+      "line": 19,
+      "description": "if a render error still makes it all the way up, the error boundary is my final safety belt. Why this way: I wanted a controlled last line of defense for the UI. Trade-off: an error boundary does not solve the root cause, but it makes failure behavior more controlled and observable."
+    },
+    {
+      "title": "Module 2.1 - Auth is global, but intentionally small",
+      "file": "ticketing-platform/apps/nightowl/src/core/auth/AuthProvider.tsx",
+      "line": 20,
+      "description": "Auth is clearly global state because almost every part of the app depends on it. At the same time, I try hard not to turn the provider into a dumping ground. Why this way: I wanted a simple rule, make only truly global things global. Trade-off: you need discipline so context does not grow too wide."
+    },
+    {
+      "title": "Module 2.2 - Session hydration on startup",
+      "file": "ticketing-platform/apps/nightowl/src/core/auth/AuthProvider.tsx",
+      "line": 27,
+      "description": "on startup I read the session from secure storage( secure storage because the session contains tokens, and tokens are sensitive). That lets the app know early whether it should show login or the main experience. Why this way: I wanted a stable startup decision. Trade-off: the app spends a brief moment in a hydration state."
+    },
+    {
+      "title": "Module 2.3 - The bridge into the HTTP client",
+      "file": "ticketing-platform/apps/nightowl/src/core/auth/AuthProvider.tsx",
+      "line": 30,
+      "description": "Here I emphasize: during hydration I immediately set the access-token provider in the shared HTTP client. Why this way: I did not want screens or features building auth headers themselves. Trade-off: auth and networking are consciously connected, which I think is reasonable for this app scope."
+    },
+    {
+      "title": "Module 2.4 - User context for observability",
+      "file": "ticketing-platform/apps/nightowl/src/core/auth/AuthProvider.tsx",
+      "line": 59,
+      "description": "Once there is a session, I also set the observed user. Why this way: errors and logs become much more useful with user context. It is a small code step, but a big operational difference. Trade-off: auth now does slightly more than only session management."
+    },
+    {
+      "title": "Module 2.5 - Sign-in in exactly one place",
+      "file": "ticketing-platform/apps/nightowl/src/core/auth/AuthProvider.tsx",
+      "line": 72,
+      "description": "`signIn` updates token, storage, and session together. Why this way: I wanted one source of truth for session changes. Trade-off: the provider becomes an important central place. Alternative: a separate auth service would be a good next step if this area grows."
+    },
+    {
+      "title": "Module 2.6 - Sign-out cleans things up properly",
+      "file": "ticketing-platform/apps/nightowl/src/core/auth/AuthProvider.tsx",
+      "line": 87,
+      "description": "logout is not just a screen event, it is a proper teardown of session, storage, and token state. Why this way: I wanted to avoid stale auth context lingering in the background. Trade-off: this flow also stays centralized in the provider rather than in individual screens."
+    },
+    {
+      "title": "Module 2.7 - Clean up broken stored sessions",
+      "file": "ticketing-platform/apps/nightowl/src/core/auth/authStorage.ts",
+      "line": 7,
+      "description": "This helper, `isSessionLike`, is a type guard. Its job is to check whether an unknown parsed value really has the shape of a `LoginResponse` before the app trusts it. Why this way: anything coming from storage or `JSON.parse` should be treated as untrusted until we validate it. Trade-off: a little more defensive code, but much more robust session hydration."
+    },
+    {
+      "title": "Module 2.7a - Why `Partial<LoginResponse>` is used",
+      "file": "ticketing-platform/apps/nightowl/src/core/auth/authStorage.ts",
+      "line": 12,
+      "description": "Here I cast the unknown value to `Partial<LoginResponse>` instead of full `LoginResponse` because at this point I do not know that all required fields are present yet. `Partial<T>` is a TypeScript utility type that means: keep the same shape as `T`, but make every property optional. That lets me safely inspect fields like `accessToken`, `refreshToken`, or `user` one by one without pretending the whole object is already valid."
+    },
+    {
+      "title": "Module 2.8 - Keep the login screen intentionally simple",
+      "file": "ticketing-platform/apps/nightowl/src/features/auth/screens/LoginScreen.tsx",
+      "line": 33,
+      "description": " the screen itself stays mostly presentational. It shows inputs, keyboard behavior, errors, and a clear call to action. Why this way: I wanted the screen to stay easy to scan. Trade-off: there is an extra hook file for the real form logic."
+    },
+    {
+      "title": "Module 2.8a - Keep inputs visible when the keyboard opens",
+      "file": "ticketing-platform/apps/nightowl/src/features/auth/screens/LoginScreen.tsx",
+      "line": 34,
+      "description": "`KeyboardAvoidingView` keeps the login inputs visible when the mobile keyboard opens, so the form stays usable on smaller screens and the keyboard does not cover the fields. Why this way: mobile forms should still feel reliable when space gets tight. Trade-off: a little more layout handling in the screen, but much better usability."
+    },
+    {
+      "title": "Module 2.9 - Local form state stays local",
+      "file": "ticketing-platform/apps/nightowl/src/features/auth/hooks/useLoginForm.ts",
+      "line": 29,
+      "description": "Here I keep the submit logic inside the hook so the screen can stay mostly presentational while the hook owns the real login flow. I wrap `submit` in `useCallback` because this function gets passed into UI event handlers, and I want a stable function reference unless the real inputs change. The function is also `async` on purpose because login is a sequence of asynchronous steps: call the API, wait for the response, then await `signIn` so auth state and storage are updated in order. Why this way: form behavior stays local and the async flow stays centralized. Trade-off: more files, but also smaller and more testable units."
+    },
+    {
+      "title": "Module 2.9a - Block duplicate submits immediately",
+      "file": "ticketing-platform/apps/nightowl/src/features/auth/hooks/useLoginForm.ts",
+      "line": 30,
+      "description": "This line, `if (isSubmittingRef.current) return;`, is a fast guard against double taps or repeated submit events. I use a ref here because it updates immediately without waiting for a re-render, so it can block duplicate submissions even before React finishes updating state. Why this way: login requests should be idempotent from the UI side whenever possible. Trade-off: there is one extra small piece of mutable state to manage carefully."
+    },
+    {
+      "title": "Module 2.9b - Dependencies keep the callback honest",
+      "file": "ticketing-platform/apps/nightowl/src/features/auth/hooks/useLoginForm.ts",
+      "line": 47,
+      "description": "The dependency array, `[form, signIn]`, tells React when this memoized callback should be recreated. `form` is included so `submit` always sees the latest email and password values, and `signIn` is included because the callback uses that auth action too. Why this way: `useCallback` should stay honest about what it captures, otherwise you risk stale values and confusing bugs."
+    },
+    {
+      "title": "Module 3.1 - Derive payment config from env centrally",
+      "file": "ticketing-platform/apps/nightowl/src/core/payments/stripeConfig.ts",
+      "line": 3,
+      "description": "Here I explain: Stripe configuration such as the publishable key, merchant name, and return URL comes from a central config module. Why this way: I did not want payment config scattered through UI or hooks. Trade-off: payment depends clearly on correct configuration, which I prefer to keeping it implicit."
+    },
+    {
+      "title": "Module 3.2 - One HTTP client for every feature",
+      "file": "ticketing-platform/apps/nightowl/src/core/api/httpClient.ts",
+      "line": 42,
+      "description": "All requests go through a shared HTTP client. I did not want a codebase where every screen has its own `fetch` style. Why this way: it gives me consistent auth, timeouts, and error behavior. Trade-off: you introduce another abstraction layer."
+    },
+    {
+      "title": "Module 3.3 - Central request IDs and default headers",
+      "file": "ticketing-platform/apps/nightowl/src/core/api/httpClient.ts",
+      "line": 50,
+      "description": "I usually say: request ID, auth, and content headers are set centrally on purpose. Why this way: it helps with mobile/backend collaboration and makes logs easier to correlate. Trade-off: people have to learn the wrapper first, but after that behavior is much more consistent."
+    },
+    {
+      "title": "Module 3.4 - Timeouts and retries with intent",
+      "file": "ticketing-platform/apps/nightowl/src/core/api/httpClient.ts",
+      "line": 64,
+      "description": "My point here is: I do not retry everything blindly, only what is safe and sensible. In checkout especially, unsafe retries would be dangerous. Why this way: reliability should not come at the cost of correctness. Trade-off: the networking layer gets more technical."
+    },
+    {
+      "title": "Module 3.5 - Normalize errors instead of leaking chaos",
+      "file": "ticketing-platform/apps/nightowl/src/core/api/httpClient.ts",
+      "line": 114,
+      "description": "I say it like this: responses and failures are normalized into an app-friendly shape. Why this way: I did not want every screen guessing what a backend error looks like. Trade-off: a central error path is more infrastructure, but it pays off quickly in a growing app."
+    },
+    {
+      "title": "Module 3.6 - Observability as a swappable interface",
+      "file": "ticketing-platform/apps/nightowl/src/core/monitoring/observability.ts",
+      "line": 16,
+      "description": "Observability is modeled behind an adapter so the app is not tightly bound to one provider. Why this way: for MVP and local work, a console adapter is enough, and later I can switch cleanly. Trade-off: one more abstraction layer, but it keeps the design decoupled."
+    },
+    {
+      "title": "Module 3.7 - One central error-reporting path",
+      "file": "ticketing-platform/apps/nightowl/src/core/monitoring/errorReporter.ts",
+      "line": 11,
+      "description": "My talk track here is: `reportError` connects normalization, observability, and logging in one place. Why this way: I did not want every catch block inventing its own error strategy. Trade-off: another shared layer, but with much more consistent behavior."
+    },
+    {
+      "title": "Module 4.1 - DTO mapping as a deliberate boundary",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/api/eventsApi.ts",
+      "line": 136,
+      "description": "Here I usually say: `eventsApi` maps backend DTOs into app models. The UI is not dealing directly with transport objects. Why this way: I wanted the app to be less tightly coupled to backend shapes. Trade-off: more mapping code, but much clearer boundaries."
+    },
+    {
+      "title": "Module 4.2 - Decide carefully when to fall back to mock mode",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/api/eventsApi.ts",
+      "line": 247,
+      "description": "My point here is: I am explicit about which failures should trigger a mock fallback. Why this way: demo and E2E safety should be deliberate, not arbitrary. Trade-off: the API layer takes on more responsibility, but this is exactly where that decision belongs."
+    },
+    {
+      "title": "Module 4.3 - The actual fallback mechanism",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/api/eventsApi.ts",
+      "line": 262,
+      "description": "I like to say: `runWithFallback` centralizes the choice between the real API and mock data. Why this way: I did not want mock conditionals spread across components. Trade-off: the file becomes denser, but the UI stays much cleaner."
+    },
+    {
+      "title": "Module 4.4 - Read events and event details through one feature API",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/api/eventsApi.ts",
+      "line": 287,
+      "description": "Event lists and event detail reads stay grouped in the same feature API. Why this way: Discover should have one clear data-access surface. Trade-off: this file is relatively central for an MVP, but later I could split it into smaller APIs."
+    },
+    {
+      "title": "Module 4.5 - Cart actions also stay in the API layer",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/api/eventsApi.ts",
+      "line": 311,
+      "description": "My line here is: tickets and add-ons go into the cart through the same API layer. Why this way: the UI should mostly say 'add this item' without worrying about transport details. Trade-off: the API layer stays broad, but the features stay simpler."
+    },
+    {
+      "title": "Module 4.6 - Clear endpoints for order and payment intent",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/api/eventsApi.ts",
+      "line": 379,
+      "description": "Here I say: the checkout hook is not calling `fetch` directly, it uses clear API functions for order creation and payment intent creation. Why this way: I wanted orchestration and transport kept separate. Trade-off: one more layer, but one that makes the hook far easier to read."
+    },
+    {
+      "title": "Module 4.7 - The coordinator owns the full experience",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/hooks/useEventsExperience.ts",
+      "line": 24,
+      "description": "`useEventsExperience` is the coordinator for the main experience. It keeps tabs, events, cart, tickets, and banners together. Why this way: I needed one place to steer the full behavior without turning the screen back into a giant monolith."
+    },
+    {
+      "title": "Module 4.8 - Roles, search, and derived state",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/hooks/useEventsExperience.ts",
+      "line": 41,
+      "description": "My point here is: a lot of the behavior is modeled as derived state, such as role access, visible events, and filtered lists. Why this way: I wanted readable rules instead of hidden component logic. Trade-off: the coordinator hook ends up holding more domain-derived behavior."
+    },
+    {
+      "title": "Module 4.9 - Busy actions as a shared pattern",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/hooks/useEventsExperience.ts",
+      "line": 103,
+      "description": "I like to explain it this way: `runBusyAction` is my shared pattern for loading, success, and error handling. Why this way: I did not want busy-state and banner logic repeated in every handler. Trade-off: one more small abstraction, but a lot less duplication."
+    },
+    {
+      "title": "Module 4.10 - Bootstrap the experience robustly",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/hooks/useEventsExperience.ts",
+      "line": 152,
+      "description": "My natural wording here is: on startup I load events, cart, and tickets in parallel with `Promise.allSettled`. Why this way: one partial failure should not automatically destroy the whole experience. Trade-off: I need to handle partial success and partial failure explicitly."
+    },
+    {
+      "title": "Module 4.11 - User actions for discover and cart",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/hooks/useEventsExperience.ts",
+      "line": 225,
+      "description": "Here I say: adding a ticket, adding an add-on, and updating a cart item all follow the same busy and API pattern. Why this way: I wanted consistent user actions across Discover and Cart. Trade-off: the coordinator stays active rather than being only a passive data holder."
+    },
+    {
+      "title": "Module 4.12 - Keep tabs and selection intentionally simple",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/hooks/useEventsExperience.ts",
+      "line": 280,
+      "description": "My point here is: tab changes and event selection are intentionally modeled in a very direct way. Why this way: these interactions are central to the product flow and should stay easy to reason about. Trade-off: in a much larger product, some of this could move into stronger navigation or state-machine patterns."
+    },
+    {
+      "title": "Module 5.1 - The main screen is now a shell",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/screens/EventsScreen.tsx",
+      "line": 75,
+      "description": "This is how I say it in interviews: the main screen is now much more shell than business logic. That was a deliberate refactoring move. Why this way: I wanted a file that shows the product flow without becoming a monolith again. Trade-off: you jump more often into hooks and feature components."
+    },
+    {
+      "title": "Module 5.2 - Tabs and role access stay visible",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/screens/EventsScreen.tsx",
+      "line": 106,
+      "description": "Here I usually say: Discover, Cart, Tickets, and Scanner are the core product areas, and Scanner is intentionally role-gated. Why this way: access rules should be visible in the product flow, not hidden somewhere obscure. Trade-off: the shell knows part of the role logic."
+    },
+    {
+      "title": "Module 5.3 - Banners and loading translate state into UI",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/screens/EventsScreen.tsx",
+      "line": 137,
+      "description": "My point here is: banners and loading states are the UI translation of internal app state. Why this way: users should understand whether the app is loading, failing, or succeeding. Trade-off: more explicit state rendering, but also much more clarity."
+    },
+    {
+      "title": "Module 5.4 - Render the right feature per tab",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/screens/EventsScreen.tsx",
+      "line": 146,
+      "description": "Here I say: the screen renders the right feature for the active tab and passes only the needed props. Why this way: I wanted composition instead of inline business logic in the screen. Trade-off: more prop wiring, but cleaner feature boundaries."
+    },
+    {
+      "title": "Module 6.1 - Why cart and checkout are separate",
+      "file": "ticketing-platform/apps/nightowl/src/features/checkout/hooks/useCheckoutExperience.ts",
+      "line": 30,
+      "description": "This is a key point for me: cart is responsible for selection and quantities, while checkout is responsible for order creation, payment intent, Stripe, and ticket refresh. Why this way: these areas grow differently in real products. Trade-off: coordination across cart, order, and tickets becomes a bit more involved."
+    },
+    {
+      "title": "Module 6.2 - Check wallet support first",
+      "file": "ticketing-platform/apps/nightowl/src/features/checkout/hooks/useCheckoutExperience.ts",
+      "line": 49,
+      "description": "I like to say: because this is a mobile app, I first check whether wallet pay is supported. Why this way: I wanted to respect the natural mobile payment experience rather than just embedding a web-style checkout. Trade-off: more platform-specific logic in the flow."
+    },
+    {
+      "title": "Module 6.3 - One-step UX, but a proper internal lifecycle",
+      "file": "ticketing-platform/apps/nightowl/src/features/checkout/hooks/useCheckoutExperience.ts",
+      "line": 78,
+      "description": "My talk track here is: for the user, checkout feels like one simple purchase flow, but internally the lifecycle stays correct: order, cart refresh, payment intent, Stripe, and ticket refresh. Why this way: I wanted simple UX without cheating the business flow. Trade-off: the internal process is still multi-step."
+    },
+    {
+      "title": "Module 6.4 - Handle demo mode and missing Stripe config on purpose",
+      "file": "ticketing-platform/apps/nightowl/src/features/checkout/hooks/useCheckoutExperience.ts",
+      "line": 106,
+      "description": "Here I explain: demo mode and missing Stripe configuration are not accidents, they are modeled checkout branches. Why this way: I wanted robust demo and development behavior. Trade-off: more outcome branches in the hook, but far more controlled behavior."
+    },
+    {
+      "title": "Module 6.5 - PaymentSheet config belongs in the hook, not the UI",
+      "file": "ticketing-platform/apps/nightowl/src/features/checkout/hooks/useCheckoutExperience.ts",
+      "line": 126,
+      "description": "My point here is: the Stripe PaymentSheet setup with customer context, ephemeral keys, and wallet options stays in the hook. Why this way: the UI should not need to know how payment context is assembled. Trade-off: the hook becomes denser, but the UI becomes much cleaner."
+    },
+    {
+      "title": "Module 6.6 - Handle different checkout outcomes explicitly",
+      "file": "ticketing-platform/apps/nightowl/src/features/checkout/hooks/useCheckoutExperience.ts",
+      "line": 212,
+      "description": "I usually say: checkout is not just success or failure. There is paid, already paid, canceled, and demo or configuration-related behavior. Why this way: good UX also needs clear messaging for edge cases. Trade-off: more outcome branches mean more maintenance."
+    },
+    {
+      "title": "Module 6.7 - Keep the checkout UI calm and natural",
+      "file": "ticketing-platform/apps/nightowl/src/features/checkout/components/CheckoutLanePanel.tsx",
+      "line": 30,
+      "description": "This is how I talk about the UI: the user mainly sees amount, payment method, and a clear call to action. The technical complexity stays in the background. Why this way: I wanted a purchase lane that feels natural instead of a technical multi-step checkout. Trade-off: the internal complexity is intentionally hidden from the user."
+    },
+    {
+      "title": "Module 7.1 - Scanner as its own mobile flow",
+      "file": "ticketing-platform/apps/nightowl/src/features/scanner/hooks/useScannerExperience.ts",
+      "line": 10,
+      "description": "I like to say here: the scanner shows that this is not just a forms-and-lists app. It deals with camera, roles, event context, and validation. Why this way: device logic should be clearly isolated. Trade-off: more specialized logic means more edge cases."
+    },
+    {
+      "title": "Module 7.2 - Ask for permissions only when needed",
+      "file": "ticketing-platform/apps/nightowl/src/features/scanner/hooks/useScannerExperience.ts",
+      "line": 38,
+      "description": "My natural sentence here is: I only ask for camera permission when the scanner is actually active. Why this way: that is better mobile UX because users are not confronted with device permissions too early. Trade-off: the scanner hook needs a little more lifecycle behavior."
+    },
+    {
+      "title": "Module 7.3 - Pause after a scan on purpose",
+      "file": "ticketing-platform/apps/nightowl/src/features/scanner/hooks/useScannerExperience.ts",
+      "line": 95,
+      "description": "Here I emphasize: after a scan I pause the camera so the same ticket is not checked in twice by accident. Why this way: real staff flows can become hectic, so I prefer safety over convenience. Trade-off: more state transitions inside the scanner flow."
+    },
+    {
+      "title": "Module 7.4 - No silent error when camera access is missing",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/components/panels/ScannerPanel.tsx",
+      "line": 24,
+      "description": "My point here is: if camera access is not available, I show a clear fallback instead of a silent failure. Why this way: staff tooling needs to guide people clearly in stressful situations. Trade-off: more UI states, but much better usability."
+    },
+    {
+      "title": "Module 7.5 - A manual backup path is intentional",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/components/panels/ScannerPanel.tsx",
+      "line": 141,
+      "description": "I like to say: even if QR scanning or the camera is not ideal, there is still a manual input path. Why this way: I did not want to build only the happy path. Trade-off: more validation cases and a bit more UI, but much stronger real-world robustness."
+    },
+    {
+      "title": "Module 8.1 - Demo and E2E mode via deep link",
+      "file": "ticketing-platform/apps/nightowl/src/core/config/runtimeMode.ts",
+      "line": 13,
+      "description": "This is how I frame it: runtime E2E mode is activated through a deep link. For me that was not a gimmick, it was a reliability decision. Why this way: I wanted demo and test flows to start reproducibly. Trade-off: there is one extra runtime path."
+    },
+    {
+      "title": "Module 8.2 - The Detox launch path is also deliberate",
+      "file": "ticketing-platform/apps/nightowl/e2e/support/nightowlActions.js",
+      "line": 3,
+      "description": "I like to say here: even the test helpers are designed intentionally. The app launches in E2E mode with clear startup conditions and fixed permissions. Why this way: I wanted stable, interview-friendly tests instead of random runs. Trade-off: a bit more test infrastructure, but much more reliability."
+    },
+    {
+      "title": "Module 8.3 - Detox covers the real attendee purchase flow",
+      "file": "ticketing-platform/apps/nightowl/e2e/nightowl-flow.e2e.js",
+      "line": 8,
+      "description": "I usually say: this E2E test covers the attendee purchase path, meaning login, ticket purchase, and wallet verification. Why this way: for a mobile app with navigation and checkout, unit tests alone are not enough. Trade-off: E2E is slower, but far more meaningful at the journey level."
+    },
+    {
+      "title": "Module 8.4 - The staff flow is also part of quality",
+      "file": "ticketing-platform/apps/nightowl/e2e/nightowl-flow.e2e.js",
+      "line": 37,
+      "description": "My point here is: I test not only the customer path but also the staff path with scanner access. Why this way: the product does not stop at payment, it also has to work at the door. Trade-off: more E2E cases mean more maintenance, but also much stronger domain confidence."
+    },
+    {
+      "title": "Module 8.5 - Core tests protect the foundation",
+      "file": "ticketing-platform/apps/nightowl/src/core/api/httpClient.test.ts",
+      "line": 31,
+      "description": "Here I say: besides Detox, I also test the technical foundation directly. For example, I verify HTTP headers, auth, and default behavior in fast, isolated tests. Why this way: when the foundation is stable, many features become more stable automatically. Trade-off: these tests are less visible than UI demos, but extremely valuable."
+    },
+    {
+      "title": "Module 8.6 - Test timeout and failure behavior explicitly",
+      "file": "ticketing-platform/apps/nightowl/src/core/api/httpClient.test.ts",
+      "line": 125,
+      "description": "I often end with something like this: I cared about more than the happy path, so I explicitly test timeout and failure behavior too. Why this way: this is where hard production bugs often live. If they ask what I would improve next, I usually mention contract tests, clearer checkout state machines, and even finer module boundaries."
+    }
+  ]
+}
