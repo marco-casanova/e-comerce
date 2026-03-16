@@ -1,10 +1,20 @@
-import { createContext, PropsWithChildren, useContext, useEffect, useState } from 'react';
+import {
+  createContext,
+  PropsWithChildren,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 
-import { setAccessTokenProvider } from '../api/httpClient';
-import { reportError } from '../monitoring/errorReporter';
-import { setObservedUser } from '../monitoring/observability';
-import type { LoginResponse } from '../../features/auth/types';
-import { clearStoredSession, persistSession, readStoredSession } from './authStorage';
+import { setAccessTokenProvider } from "../api/httpClient";
+import { reportError } from "../monitoring/errorReporter";
+import { setObservedUser } from "../monitoring/observability";
+import type { LoginResponse } from "../../features/auth/types";
+import {
+  clearStoredSession,
+  persistSession,
+  readStoredSession,
+} from "./authStorage";
 
 type AuthSession = LoginResponse | null;
 
@@ -34,8 +44,8 @@ export function AuthProvider({ children }: PropsWithChildren) {
         }
       } catch (error) {
         reportError(error, {
-          domain: 'auth',
-          action: 'hydrateSession',
+          domain: "auth",
+          action: "hydrateSession",
         });
 
         setAccessTokenProvider(() => null);
@@ -76,8 +86,8 @@ export function AuthProvider({ children }: PropsWithChildren) {
       setSession(nextSession);
     } catch (error) {
       reportError(error, {
-        domain: 'auth',
-        action: 'signIn',
+        domain: "auth",
+        action: "signIn",
         details: { userId: nextSession.user.id },
       });
       throw error;
@@ -91,21 +101,25 @@ export function AuthProvider({ children }: PropsWithChildren) {
       setSession(null);
     } catch (error) {
       reportError(error, {
-        domain: 'auth',
-        action: 'signOut',
+        domain: "auth",
+        action: "signOut",
       });
       throw error;
     }
   }
 
-  return <AuthContext.Provider value={{ session, isHydrating, signIn, signOut }}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={{ session, isHydrating, signIn, signOut }}>
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
 export function useAuth() {
   const value = useContext(AuthContext);
 
   if (!value) {
-    throw new Error('useAuth must be used within AuthProvider');
+    throw new Error("useAuth must be used within AuthProvider");
   }
 
   return value;

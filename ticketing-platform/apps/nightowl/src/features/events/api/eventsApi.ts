@@ -1,4 +1,4 @@
-import { IS_E2E_MODE } from '../../../core/config/appConfig';
+import { getIsE2EModeEnabled } from '../../../core/config/runtimeMode';
 import { httpClient } from '../../../core/api/httpClient';
 import { toAppError } from '../../../core/errors/appError';
 import type {
@@ -242,7 +242,7 @@ function mapScanResult(result: ScanValidationResponse): ScanValidationResult {
 
 type DataSourceMode = 'remote' | 'mock';
 
-let dataSourceMode: DataSourceMode = IS_E2E_MODE ? 'mock' : 'remote';
+let dataSourceMode: DataSourceMode = getIsE2EModeEnabled() ? 'mock' : 'remote';
 
 function shouldFallbackToMock(error: unknown) {
   const appError = toAppError(error);
@@ -260,6 +260,11 @@ function shouldFallbackToMock(error: unknown) {
 }
 
 async function runWithFallback<T>(remote: () => Promise<T>, mock: () => T | Promise<T>) {
+  if (getIsE2EModeEnabled()) {
+    dataSourceMode = 'mock';
+    return mock();
+  }
+
   if (dataSourceMode === 'mock') {
     return mock();
   }
@@ -277,7 +282,7 @@ async function runWithFallback<T>(remote: () => Promise<T>, mock: () => T | Prom
 }
 
 export const eventsApi = {
-  getDataSourceMode: () => dataSourceMode,
+  getDataSourceMode: () => (getIsE2EModeEnabled() ? 'mock' : dataSourceMode),
 
   listEvents: async () => {
     return runWithFallback(

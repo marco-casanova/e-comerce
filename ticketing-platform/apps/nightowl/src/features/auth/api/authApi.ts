@@ -1,4 +1,4 @@
-import { IS_E2E_MODE } from '../../../core/config/appConfig';
+import { getIsE2EModeEnabled } from '../../../core/config/runtimeMode';
 import { toAppError } from '../../../core/errors/appError';
 import { httpClient } from '../../../core/api/httpClient';
 import { loginWithMockAuth } from './mockAuthApi';
@@ -21,7 +21,7 @@ function shouldFallbackToMock(error: unknown) {
 
 export const authApi = {
   login: async (payload: LoginPayload) => {
-    if (IS_E2E_MODE) {
+    if (getIsE2EModeEnabled()) {
       return loginWithMockAuth(payload);
     }
 

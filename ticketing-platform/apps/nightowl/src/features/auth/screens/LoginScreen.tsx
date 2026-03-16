@@ -1,7 +1,10 @@
 import { useRef } from "react";
 import {
   Keyboard,
+  KeyboardAvoidingView,
+  Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -28,68 +31,85 @@ export function LoginScreen() {
   }
 
   return (
-    <View testID="login-screen" style={styles.container}>
-      <Text accessibilityRole="header" style={styles.title}>
-        Login
-      </Text>
-
-      <TextInput
-        accessibilityLabel="Email"
-        testID="login-email-input"
-        autoCapitalize="none"
-        autoComplete="email"
-        autoCorrect={false}
-        keyboardType="email-address"
-        placeholder="Email"
-        placeholderTextColor="#7a8599"
-        returnKeyType="next"
-        style={styles.input}
-        textContentType="emailAddress"
-        value={email}
-        onChangeText={setEmail}
-        onSubmitEditing={() => passwordRef.current?.focus()}
-      />
-
-      <TextInput
-        ref={passwordRef}
-        accessibilityLabel="Password"
-        testID="login-password-input"
-        autoComplete="password"
-        placeholder="Password"
-        placeholderTextColor="#7a8599"
-        returnKeyType="done"
-        secureTextEntry
-        style={styles.input}
-        textContentType="password"
-        value={password}
-        onChangeText={setPassword}
-        onSubmitEditing={handleSubmit}
-      />
-
-      {errorMessage ? (
-        <Text accessibilityRole="alert" testID="login-error" style={styles.error}>
-          {errorMessage}
-        </Text>
-      ) : null}
-
-      <Pressable
-        accessibilityLabel={isSubmitting ? "Signing in" : "Sign in"}
-        accessibilityRole="button"
-        accessibilityState={{ disabled: isSubmitting }}
-        disabled={isSubmitting}
-        testID="login-submit-button"
-        style={[styles.button, isSubmitting && styles.buttonDisabled]}
-        onPress={handleSubmit}
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      style={styles.root}
+    >
+      <ScrollView
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
       >
-        <Text style={styles.buttonText}>
-          {isSubmitting ? "Signing in..." : "Sign in"}
-        </Text>
-      </Pressable>
-    </View>
+        <View testID="login-screen" style={styles.container}>
+          <Text accessibilityRole="header" style={styles.title}>
+            Login
+          </Text>
+
+          <TextInput
+            accessibilityLabel="Email"
+            testID="login-email-input"
+            autoCapitalize="none"
+            autoComplete="email"
+            autoCorrect={false}
+            keyboardType="email-address"
+            placeholder="Email"
+            placeholderTextColor="#7a8599"
+            returnKeyType="next"
+            style={styles.input}
+            textContentType="emailAddress"
+            value={email}
+            onChangeText={setEmail}
+            onSubmitEditing={() => passwordRef.current?.focus()}
+          />
+
+          <TextInput
+            ref={passwordRef}
+            accessibilityLabel="Password"
+            testID="login-password-input"
+            autoComplete="password"
+            placeholder="Password"
+            placeholderTextColor="#7a8599"
+            returnKeyType="done"
+            secureTextEntry
+            style={styles.input}
+            textContentType="password"
+            value={password}
+            onChangeText={setPassword}
+            onSubmitEditing={handleSubmit}
+          />
+
+          {errorMessage ? (
+            <Text accessibilityRole="alert" testID="login-error" style={styles.error}>
+              {errorMessage}
+            </Text>
+          ) : null}
+
+          <Pressable
+            accessibilityLabel={isSubmitting ? "Signing in" : "Sign in"}
+            accessibilityRole="button"
+            accessibilityState={{ disabled: isSubmitting }}
+            disabled={isSubmitting}
+            testID="login-submit-button"
+            style={[styles.button, isSubmitting && styles.buttonDisabled]}
+            onPress={handleSubmit}
+          >
+            <Text style={styles.buttonText}>
+              {isSubmitting ? "Signing in..." : "Sign in"}
+            </Text>
+          </Pressable>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+  },
+  content: {
+    flexGrow: 1,
+  },
   container: {
     flex: 1,
     justifyContent: "center",

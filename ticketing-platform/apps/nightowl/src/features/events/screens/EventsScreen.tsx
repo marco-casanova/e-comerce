@@ -67,7 +67,11 @@ export function EventsScreen() {
       <View pointerEvents="none" style={styles.backgroundOrbPrimary} />
       <View pointerEvents="none" style={styles.backgroundOrbSecondary} />
 
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+        testID="events-scroll"
+      >
         <View testID="events-hero" style={styles.heroCard}>
           <View style={styles.heroHeader}>
             <View style={styles.heroCopy}>
