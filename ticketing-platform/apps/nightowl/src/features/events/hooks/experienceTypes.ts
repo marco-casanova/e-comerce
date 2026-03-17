@@ -10,7 +10,7 @@ export type CameraPermissionState = {
   canAskAgain: boolean;
 };
 
-export type CheckoutPaymentMethod = 'card' | 'wallet';
+export type CheckoutPaymentMethod = 'apple_pay' | 'google_pay' | 'card';
 
 export type MessageTarget = 'banner' | 'scan';
 

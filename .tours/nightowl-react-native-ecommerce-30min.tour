@@ -1,0 +1,709 @@
+{
+  "$schema": "https://aka.ms/codetour-schema",
+  "title": "Night Owl Mobile E-commerce Tour 30 Min",
+  "description": "A super simple, casual English CodeTour that walks through the Night Owl mobile e-commerce flow from login to checkout, wallet, and ticket validation in about 30 minutes.",
+  "steps": [
+    {
+      "title": "Intro 1 - Welcome",
+      "file": "ticketing-platform/apps/nightowl/src/app/AppRoot.tsx",
+      "line": 7,
+      "description": "Night Owl is a small mobile e-commerce app for events. The short version is: sign in, browse events, add tickets or merch, pay, then carry a scannable pass to the door."
+    },
+    {
+      "title": "Intro 2 - Keep root small",
+      "file": "ticketing-platform/apps/nightowl/src/app/AppRoot.tsx",
+      "line": 9,
+      "description": "`AppRoot` is intentionally quiet. It just says: wrap the app, apply the safe layout, and hand off to navigation."
+    },
+    {
+      "title": "Intro 3 - First fork",
+      "file": "ticketing-platform/apps/nightowl/src/app/AppRoot.tsx",
+      "line": 11,
+      "description": "`RootNavigator` is the first real product fork. This is where the app decides whether the user should see login or the shopping experience."
+    },
+    {
+      "title": "Intro 4 - Backstage setup",
+      "file": "ticketing-platform/apps/nightowl/src/app/AppProviders.tsx",
+      "line": 31,
+      "description": "`AppProviders` is the backstage area. If something matters to the whole app, it usually gets wired here instead of inside a feature screen."
+    },
+    {
+      "title": "Intro 5 - Global safety and payments",
+      "file": "ticketing-platform/apps/nightowl/src/app/AppProviders.tsx",
+      "line": 84,
+      "description": "This top layer holds the global seatbelts and payment plumbing. That keeps error handling and Stripe setup out of the shopping screens."
+    },
+    {
+      "title": "Intro 6 - Bootstrap first",
+      "file": "ticketing-platform/apps/nightowl/src/app/AppProviders.tsx",
+      "line": 93,
+      "description": "Before the app renders normally, it can show a tiny bootstrap screen. It is a small detail, but it makes startup feel intentional instead of jumpy."
+    },
+    {
+      "title": "Auth 1 - Wait for hydration",
+      "file": "ticketing-platform/apps/nightowl/src/app/RootNavigator.tsx",
+      "line": 10,
+      "description": "The navigator waits while auth is hydrating. That stops the app from flashing login before stored session data is restored."
+    },
+    {
+      "title": "Auth 2 - No session",
+      "file": "ticketing-platform/apps/nightowl/src/app/RootNavigator.tsx",
+      "line": 19,
+      "description": "If there is no session, the app goes straight to `LoginScreen`. Nice and simple."
+    },
+    {
+      "title": "Auth 3 - Session found",
+      "file": "ticketing-platform/apps/nightowl/src/app/RootNavigator.tsx",
+      "line": 23,
+      "description": "If there is a session, the user lands in `EventsScreen`. That is the main Night Owl experience."
+    },
+    {
+      "title": "Auth 3a - Why `useAuth` exists",
+      "file": "ticketing-platform/apps/nightowl/src/core/auth/AuthProvider.tsx",
+      "line": 118,
+      "description": "`useAuth` is a small custom hook around `useContext`. I use it anywhere I need session data or auth actions, so the rest of the app never reads `AuthContext` directly So we usually do not read the context directly because we want one controlled access point, not many components touching the raw context object."
+    },
+    {
+      "title": "Auth 4 - Simple login screen",
+      "file": "ticketing-platform/apps/nightowl/src/features/auth/screens/LoginScreen.tsx",
+      "line": 16,
+      "description": "`LoginScreen` is mostly a visual shell. Inputs, button, layout, and a little error text live here, while the real behavior sits in a hook."
+    },
+    {
+      "title": "Auth 5 - Keyboard friendly",
+      "file": "ticketing-platform/apps/nightowl/src/features/auth/screens/LoginScreen.tsx",
+      "line": 34,
+      "description": "`KeyboardAvoidingView` keeps the form usable when the keyboard opens. That matters a lot on smaller phones."
+    },
+    {
+      "title": "Auth 6 - Input flow",
+      "file": "ticketing-platform/apps/nightowl/src/features/auth/screens/LoginScreen.tsx",
+      "line": 48,
+      "description": "These inputs are tuned for the actual job: email behavior first, password behavior second, then a smooth keyboard handoff between them."
+    },
+    {
+      "title": "Auth 7 - Busy button",
+      "file": "ticketing-platform/apps/nightowl/src/features/auth/screens/LoginScreen.tsx",
+      "line": 87,
+      "description": "The submit button reflects busy state in the UI. So the user gets instant feedback that sign-in is working."
+    },
+    {
+      "title": "Auth 8 - Hook owns behavior",
+      "file": "ticketing-platform/apps/nightowl/src/features/auth/hooks/useLoginForm.ts",
+      "line": 14,
+      "description": "`useLoginForm` keeps the screen simple. The screen renders the form, and the hook owns the login flow."
+    },
+    {
+      "title": "Auth 8a - Why `useLoginForm` is a hook",
+      "file": "ticketing-platform/apps/nightowl/src/features/auth/hooks/useLoginForm.ts",
+      "line": 14,
+      "description": "`useLoginForm` groups form state, submit logic, loading, and error handling in one place. The use case is simple: keep `LoginScreen` mostly presentational and easier to explain or test."
+    },
+    {
+      "title": "Auth 9 - Memoized async submit",
+      "file": "ticketing-platform/apps/nightowl/src/features/auth/hooks/useLoginForm.ts",
+      "line": 29,
+      "description": "The `submit` function is wrapped in `useCallback` and marked `async`. That gives the UI a stable function reference and makes the async login sequence explicit."
+    },
+    {
+      "title": "Auth 10 - Double-tap guard",
+      "file": "ticketing-platform/apps/nightowl/src/features/auth/hooks/useLoginForm.ts",
+      "line": 30,
+      "description": "`isSubmittingRef` is a fast duplicate-submit guard. It can block double taps immediately, before React finishes re-rendering."
+    },
+    {
+      "title": "Auth 11 - Clean payload",
+      "file": "ticketing-platform/apps/nightowl/src/features/auth/hooks/useLoginForm.ts",
+      "line": 37,
+      "description": "Right before login, the hook trims the email and builds the payload. It is a tiny cleanup step, but it saves messy input bugs later."
+    },
+    {
+      "title": "Auth 12 - Global session home",
+      "file": "ticketing-platform/apps/nightowl/src/core/auth/AuthProvider.tsx",
+      "line": 30,
+      "description": "`AuthProvider` is the single home for session state. Once login succeeds, the rest of the app reads auth from here."
+    },
+    {
+      "title": "Auth 12a - How state is handled here",
+      "file": "ticketing-platform/apps/nightowl/src/core/auth/AuthProvider.tsx",
+      "line": 31,
+      "description": "State here is just simple React state plus Context. `session` and `isHydrating` live in `useState`, then the provider shares them with the whole app because auth changes what the whole app should show."
+    },
+    {
+      "title": "Auth 12b - Why this is enough for now",
+      "file": "ticketing-platform/apps/nightowl/src/app/RootNavigator.tsx",
+      "line": 8,
+      "description": "The nice part of this approach is that it is built-in, small, and easy to follow. The trade-off is that Context is great for a small amount of global state, but it gets messy if too many unrelated things start living in one provider."
+    },
+    {
+      "title": "Auth 12c - When Redux or MobX makes more sense",
+      "file": "ticketing-platform/apps/nightowl/src/core/auth/AuthProvider.tsx",
+      "line": 111,
+      "description": "I would move to Redux or MobX when lots of screens need to read and update large shared state and the current hooks become hard to trace. Super simple version: Redux is more strict and predictable with one central store and explicit updates, while MobX feels more automatic and flexible with observable state. For this auth case, Context is enough."
+    },
+    {
+      "title": "Auth 13 - Restore session",
+      "file": "ticketing-platform/apps/nightowl/src/core/auth/AuthProvider.tsx",
+      "line": 37,
+      "description": "On startup, the provider hydrates from storage. That is why the app can remember who you are between launches."
+    },
+    {
+      "title": "Auth 13a - Simple security measure: safer storage",
+      "file": "ticketing-platform/apps/nightowl/src/core/auth/authStorage.ts",
+      "line": 23,
+      "description": "A simple security measure here is that the session is read from `expo-secure-store`, not from a plain storage helper. The idea is: auth data should live in a safer place than normal app data."
+    },
+    {
+      "title": "Auth 14 - Save session",
+      "file": "ticketing-platform/apps/nightowl/src/core/auth/AuthProvider.tsx",
+      "line": 82,
+      "description": "`signIn` persists the session and updates in-memory state together. One place, one rule, less drift."
+    },
+    {
+      "title": "Auth 15 - Clear session",
+      "file": "ticketing-platform/apps/nightowl/src/core/auth/AuthProvider.tsx",
+      "line": 97,
+      "description": "`signOut` does the opposite cleanup. Token, storage, and session state all get cleared together."
+    },
+    {
+      "title": "Auth 15a - Simple security measure: clean logout",
+      "file": "ticketing-platform/apps/nightowl/src/core/auth/AuthProvider.tsx",
+      "line": 97,
+      "description": "Another security measure is that logout clears the token provider, clears secure storage, and resets session state together. That lowers the chance of stale auth sticking around by mistake."
+    },
+    {
+      "title": "Auth 16 - Validate stored JSON",
+      "file": "ticketing-platform/apps/nightowl/src/core/auth/authStorage.ts",
+      "line": 7,
+      "description": "`isSessionLike` is the 'do not trust storage blindly' check. Anything coming from `JSON.parse` is treated like untrusted input until it passes this shape check."
+    },
+    {
+      "title": "Auth 16a - Simple security measure: validate before trust",
+      "file": "ticketing-platform/apps/nightowl/src/core/auth/authStorage.ts",
+      "line": 31,
+      "description": "This is also a security measure: the app does not trust parsed storage automatically. It checks the shape first, and if the payload looks wrong it throws it away instead of using it."
+    },
+    {
+      "title": "Auth 17 - Why Partial is used",
+      "file": "ticketing-platform/apps/nightowl/src/core/auth/authStorage.ts",
+      "line": 12,
+      "description": "`Partial<LoginResponse>` means the same object shape, but every field is optional for now. That is handy when we want to inspect fields one by one before claiming the whole object is valid."
+    },
+    {
+      "title": "Auth 18 - Delete broken storage",
+      "file": "ticketing-platform/apps/nightowl/src/core/auth/authStorage.ts",
+      "line": 32,
+      "description": "If the stored session is broken, the app deletes it and moves on. That is much better than keeping corrupted auth state around."
+    },
+    {
+      "title": "Auth 18a - Easy security upgrades later",
+      "file": "ticketing-platform/apps/nightowl/src/core/auth/AuthProvider.tsx",
+      "line": 82,
+      "description": "Easy future security upgrades would be things like token refresh and expiry handling, refresh-token rotation on the backend, and maybe an extra app lock for sensitive staff flows. So the current setup is solid, but it still has room to harden."
+    },
+    {
+      "title": "Store 1 - Browse model",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/types.ts",
+      "line": 1,
+      "description": "`EventSummary` is the lightweight model for browsing. It has just enough info for the rail and search experience."
+    },
+    {
+      "title": "Store 2 - Main product",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/types.ts",
+      "line": 12,
+      "description": "`TicketType` is the main product Night Owl sells. This is the paid pass a customer is really buying."
+    },
+    {
+      "title": "Store 3 - Extras too",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/types.ts",
+      "line": 23,
+      "description": "`EventAddOn` covers the extras around the event, like merch. That is what turns the app from ticket-only into a fuller e-commerce flow."
+    },
+    {
+      "title": "Store 4 - Mini storefront",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/types.ts",
+      "line": 37,
+      "description": "`EventDetail` is where an event becomes a mini storefront. It combines the event info with its ticket types and add-ons."
+    },
+    {
+      "title": "Store 5 - Checkout handoff",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/types.ts",
+      "line": 60,
+      "description": "`OrderSummary` and `PaymentIntentSummary` are the handoff into checkout. One represents the order, the other represents the payment attempt."
+    },
+    {
+      "title": "Store 6 - Final thing user gets",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/types.ts",
+      "line": 77,
+      "description": "`TicketPass` is the thing the buyer actually uses later. So the journey is not over at payment; it ends at the door."
+    },
+    {
+      "title": "Flow 1 - Main conductor",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/hooks/useEventsExperience.ts",
+      "line": 24,
+      "description": "`useEventsExperience` is the main conductor for Night Owl. It keeps the shopping flow, wallet flow, and scanner flow coordinated in one place."
+    },
+    {
+      "title": "Flow 1a - Why `useEventsExperience` is a hook",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/hooks/useEventsExperience.ts",
+      "line": 24,
+      "description": "`useEventsExperience` is a feature hook because this screen has a lot of connected state and actions. I use it so `EventsScreen` can stay mostly a shell while the hook coordinates the real behavior."
+    },
+    {
+      "title": "Flow 2 - Role-aware app",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/hooks/useEventsExperience.ts",
+      "line": 41,
+      "description": "User roles matter here because only staff-like roles should see the scanner tools. That keeps customer and staff experiences in the same app without mixing them up."
+    },
+    {
+      "title": "Flow 3 - What shoppers see",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/hooks/useEventsExperience.ts",
+      "line": 47,
+      "description": "The browse list is shaped by status and search. So shoppers mostly see published events, and search narrows the list down."
+    },
+    {
+      "title": "Flow 3a - Why `useDeferredValue` is here",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/hooks/useEventsExperience.ts",
+      "line": 39,
+      "description": "`useDeferredValue` lets search input stay responsive while filtering catches up. The use case is smoother typing, especially once the event list gets larger."
+    },
+    {
+      "title": "Flow 4 - Load core data",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/hooks/useEventsExperience.ts",
+      "line": 152,
+      "description": "`bootstrapExperience` loads events, cart, and tickets together. That gives the app enough data to feel alive right away."
+    },
+    {
+      "title": "Flow 5 - Lazy event detail",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/hooks/useEventsExperience.ts",
+      "line": 195,
+      "description": "Event detail is loaded lazily when needed. That keeps the initial load smaller and fetches deeper info only for the selected event."
+    },
+    {
+      "title": "Flow 6 - In-cart count",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/hooks/useEventsExperience.ts",
+      "line": 220,
+      "description": "`getCartQuantity` is why a product card can say `2 in cart` without guessing. It reads the current basket and gives the UI a simple answer."
+    },
+    {
+      "title": "Flow 7 - Shared busy pattern",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/hooks/useEventsExperience.ts",
+      "line": 225,
+      "description": "Add-to-cart actions share one reusable busy-action pattern. That keeps loading, success, and error behavior consistent across tickets and extras."
+    },
+    {
+      "title": "Flow 8 - One connected experience",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/hooks/useEventsExperience.ts",
+      "line": 247,
+      "description": "Cart edits, clear cart, ticket refresh, and tab changes stay in the same coordinator. So the main screen feels like one connected experience, not a bunch of mini apps.\n\nrunBusyAction = common wrapper for async UI actions start loading -> do the request -> update state if OK -> show error if not -> stop loading\n"
+    },
+    {
+      "title": "Screen 1 - Main shell",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/screens/EventsScreen.tsx",
+      "line": 24,
+      "description": "`EventsScreen` is the shell for the whole Night Owl journey. It swaps between browsing, paying, viewing tickets, and scanning."
+    },
+    {
+      "title": "Screen 2 - Cart stays close",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/screens/EventsScreen.tsx",
+      "line": 95,
+      "description": "The top-right cart button keeps the basket close at all times. That is a very e-commerce move: let the shopper jump to the basket fast."
+    },
+    {
+      "title": "Screen 3 - Badge count",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/screens/EventsScreen.tsx",
+      "line": 105,
+      "description": "The little badge is driven by total cart item count. So one glance tells the user whether the basket has anything waiting."
+    },
+    {
+      "title": "Screen 4 - Simple tabs",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/screens/EventsScreen.tsx",
+      "line": 141,
+      "description": "The tab row keeps the flow easy to follow: discover, cart, tickets, and scanner. It is simple state-driven navigation instead of deep routing."
+    },
+    {
+      "title": "Screen 5 - Shared state slices",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/screens/EventsScreen.tsx",
+      "line": 216,
+      "description": "The tickets and scanner areas are just other slices of the same shared experience state. That is why the app can feel connected end to end."
+    },
+    {
+      "title": "Discover 1 - Browse surface",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/components/panels/DiscoverPanel.tsx",
+      "line": 42,
+      "description": "`DiscoverPanel` starts with search and a horizontal event rail. It feels a bit like browsing products, just with events instead of shoes or shirts."
+    },
+    {
+      "title": "Discover 2 - Pick active event",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/components/panels/DiscoverPanel.tsx",
+      "line": 54,
+      "description": "Tapping an event card swaps the active detail view below. So the top rail is basically a picker for the current storefront."
+    },
+    {
+      "title": "Discover 3 - Key event info first",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/components/panels/DiscoverPanel.tsx",
+      "line": 85,
+      "description": "The event header shows the basics first: title, time, venue, and capacity. That is the minimum info a buyer wants before deciding to buy."
+    },
+    {
+      "title": "Discover 4 - Ticket cards",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/components/panels/DiscoverPanel.tsx",
+      "line": 107,
+      "description": "Ticket cards show price, remaining stock, and in-cart count together. That makes the purchase decision quick and visual."
+    },
+    {
+      "title": "Discover 5 - Extra cards",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/components/panels/DiscoverPanel.tsx",
+      "line": 128,
+      "description": "Extra cards use their own stock math and category labels. So shirts, caps, or other merch can behave like real products too."
+    },
+    {
+      "title": "Discover 6 - Shared product card",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/components/EventUi.tsx",
+      "line": 39,
+      "description": "`SellableCard` is the reusable product card for both tickets and extras. One shared pattern keeps the store consistent."
+    },
+    {
+      "title": "Discover 7 - Quantity chooser",
+      "file": "ticketing-platform/apps/nightowl/src/core/ui/components/QuantityControl.tsx",
+      "line": 3,
+      "description": "`QuantityControl` lets the buyer choose how many before adding. It is a small component, but it is a big part of the shopping feel."
+    },
+    {
+      "title": "Cart 1 - Basket view",
+      "file": "ticketing-platform/apps/nightowl/src/features/cart/components/CartItemsPanel.tsx",
+      "line": 22,
+      "description": "`CartItemsPanel` is the editable basket view. This is where the shopper double-checks what they are about to pay for."
+    },
+    {
+      "title": "Cart 2 - Item plus event",
+      "file": "ticketing-platform/apps/nightowl/src/features/cart/components/CartItemsPanel.tsx",
+      "line": 33,
+      "description": "Each basket row keeps the item info and the parent event together. That matters because a Night Owl cart can mix tickets and extras from the event."
+    },
+    {
+      "title": "Cart 3 - Totals",
+      "file": "ticketing-platform/apps/nightowl/src/features/cart/components/CartItemsPanel.tsx",
+      "line": 55,
+      "description": "The footer recomputes item count and total from cart state. So the cart summary always matches the actual basket."
+    },
+    {
+      "title": "Cart 4 - Recovery path",
+      "file": "ticketing-platform/apps/nightowl/src/features/cart/components/CartItemsPanel.tsx",
+      "line": 65,
+      "description": "If the cart is empty, the app nudges the user back toward Discover. That is a nice e-commerce recovery path."
+    },
+    {
+      "title": "Checkout 1 - Payment UX lives here",
+      "file": "ticketing-platform/apps/nightowl/src/features/checkout/components/CheckoutLanePanel.tsx",
+      "line": 164,
+      "description": "`CheckoutLanePanel` is where the payment UX lives. The cart says what you picked; checkout says how you will pay."
+    },
+    {
+      "title": "Checkout 2 - Amount source",
+      "file": "ticketing-platform/apps/nightowl/src/features/checkout/components/CheckoutLanePanel.tsx",
+      "line": 185,
+      "description": "The amount comes from the current cart or a pending order. That means checkout can continue even if the order already exists and is still waiting for payment."
+    },
+    {
+      "title": "Checkout 3 - Payment choice is visible",
+      "file": "ticketing-platform/apps/nightowl/src/features/checkout/components/CheckoutLanePanel.tsx",
+      "line": 208,
+      "description": "Payment method is a first-class choice in the UI. The app does not hide that decision inside Stripe."
+    },
+    {
+      "title": "Checkout 4 - Clear payment options",
+      "file": "ticketing-platform/apps/nightowl/src/features/checkout/components/CheckoutLanePanel.tsx",
+      "line": 210,
+      "description": "Apple Pay, Google Pay, and Card Pay each get their own icon and copy. That makes the checkout options feel clear and intentional."
+    },
+    {
+      "title": "Checkout 5 - Smart pay button",
+      "file": "ticketing-platform/apps/nightowl/src/features/checkout/components/CheckoutLanePanel.tsx",
+      "line": 237,
+      "description": "The main pay button changes label with the selected method and busy state. So the button always matches what the user is about to do."
+    },
+    {
+      "title": "Checkout 6 - Method summary",
+      "file": "ticketing-platform/apps/nightowl/src/features/checkout/components/CheckoutLanePanel.tsx",
+      "line": 253,
+      "description": "The summary card below the button updates with the chosen payment flow. That is a nice little confirmation before the user taps pay."
+    },
+    {
+      "title": "Checkout 7 - Checkout hook",
+      "file": "ticketing-platform/apps/nightowl/src/features/checkout/hooks/useCheckoutExperience.ts",
+      "line": 30,
+      "description": "`useCheckoutExperience` orchestrates order creation, payment intent creation, and the actual payment UI. The panel stays visual, while the hook owns the payment logic."
+    },
+    {
+      "title": "Checkout 7a - Why `useCheckoutExperience` is a hook",
+      "file": "ticketing-platform/apps/nightowl/src/features/checkout/hooks/useCheckoutExperience.ts",
+      "line": 30,
+      "description": "`useCheckoutExperience` keeps Stripe state, order state, and payment side effects out of the panel. The use case is a cleaner checkout UI with one place handling the payment workflow."
+    },
+    {
+      "title": "Checkout 7b - Why `useStripe` is used",
+      "file": "ticketing-platform/apps/nightowl/src/features/checkout/hooks/useCheckoutExperience.ts",
+      "line": 43,
+      "description": "`useStripe` is the SDK hook from Stripe's React Native library. I use it to check wallet support and to open Stripe's payment sheet from inside the checkout hook."
+    },
+    {
+      "title": "Checkout 8 - Reuse pending order",
+      "file": "ticketing-platform/apps/nightowl/src/features/checkout/hooks/useCheckoutExperience.ts",
+      "line": 82,
+      "description": "A pending order can be reused instead of recreated. That helps the flow recover cleanly if payment was started but not fully finished."
+    },
+    {
+      "title": "Checkout 9 - Method shapes Stripe config",
+      "file": "ticketing-platform/apps/nightowl/src/features/checkout/hooks/useCheckoutExperience.ts",
+      "line": 129,
+      "description": "The selected method decides whether Apple Pay or Google Pay config is added to Stripe. So the payment sheet is built to match the user's choice."
+    },
+    {
+      "title": "Checkout 10 - Mock checkout",
+      "file": "ticketing-platform/apps/nightowl/src/features/checkout/hooks/useCheckoutExperience.ts",
+      "line": 109,
+      "description": "In mock mode, the app can finish the checkout flow without a real card sheet. That keeps the demo moving"
+    },
+    {
+      "title": "Wallet 1 - Ticket wallet",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/components/panels/TicketsPanel.tsx",
+      "line": 20,
+      "description": "`TicketsPanel` is the buyer wallet. After payment, this is where the purchase becomes something useful in the real world."
+    },
+    {
+      "title": "Wallet 2 - Raw payload too",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/components/panels/TicketsPanel.tsx",
+      "line": 28,
+      "description": "Each paid ticket also exposes the raw door payload. That is handy for manual scanning, debugging, and demos."
+    },
+    {
+      "title": "Wallet 3 - QR-style pass",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/components/EventUi.tsx",
+      "line": 113,
+      "description": "`PassMatrix` turns the payload into a QR-style visual. It is not just text; it looks like a pass you can actually present."
+    },
+    {
+      "title": "Scanner 1 - Staff side",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/components/panels/ScannerPanel.tsx",
+      "line": 110,
+      "description": "`ScannerPanel` is the staff side of the same commerce flow. This is the moment where payment and entry finally connect."
+    },
+    {
+      "title": "Scanner 2 - Event matters",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/components/panels/ScannerPanel.tsx",
+      "line": 125,
+      "description": "Validation is event-specific, which is why the event chips matter. A ticket has to match the event being scanned at the door."
+    },
+    {
+      "title": "Scanner 3 - Manual input",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/components/panels/ScannerPanel.tsx",
+      "line": 141,
+      "description": "Manual scanner input accepts payload text or a raw ticket id. That is great for testing even when the camera is not in the loop."
+    },
+    {
+      "title": "Scanner 4 - Separate scanner logic",
+      "file": "ticketing-platform/apps/nightowl/src/features/scanner/hooks/useScannerExperience.ts",
+      "line": 10,
+      "description": "`useScannerExperience` keeps scanner behavior separate from shopper behavior. That keeps the logic cleaner on both sides."
+    },
+    {
+      "title": "Scanner 4a - Why `useScannerExperience` is a hook",
+      "file": "ticketing-platform/apps/nightowl/src/features/scanner/hooks/useScannerExperience.ts",
+      "line": 10,
+      "description": "`useScannerExperience` groups camera permission, manual input, scan feedback, and validation logic. The use case is keeping the scanner UI simple while one hook owns the staff workflow."
+    },
+    {
+      "title": "Scanner 5 - Refresh after success",
+      "file": "ticketing-platform/apps/nightowl/src/features/scanner/hooks/useScannerExperience.ts",
+      "line": 107,
+      "description": "On success, validation refreshes tickets and shows feedback. So the wallet and the scanner stay in sync after a scan."
+    },
+    {
+      "title": "Scanner 6 - Pause after one read",
+      "file": "ticketing-platform/apps/nightowl/src/features/scanner/hooks/useScannerExperience.ts",
+      "line": 124,
+      "description": "Camera scans pause after one read to avoid duplicate validations. That is a small UX detail with big practical value."
+    },
+    {
+      "title": "Bridge 1 - Wallet meets scanner",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/utils.ts",
+      "line": 46,
+      "description": "`buildEntryPayload` and `extractTicketIdFromPayload` are the shared bridge between wallet and scanner. One builds the pass string, the other reads it back."
+    },
+    {
+      "title": "API 1 - Clean app models",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/api/eventsApi.ts",
+      "line": 136,
+      "description": "`eventsApi` maps backend DTOs into app models. The UI deals with clean app-shaped data instead of raw transport objects."
+    },
+    {
+      "title": "API 2 - Real or demo mode",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/api/eventsApi.ts",
+      "line": 262,
+      "description": "`runWithFallback` hides the switch between real APIs and demo mode. That keeps mock logic out of the UI."
+    },
+    {
+      "title": "API 2a - How fallback really works",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/api/eventsApi.ts",
+      "line": 262,
+      "description": "`runWithFallback` is the little traffic cop for the feature API. If E2E mode is on, or the app already dropped into mock mode, it goes straight to mock data. Otherwise it tries the real API first and only falls back when the error looks like a network or timeout problem."
+    },
+    {
+      "title": "API 3 - Actions stay behind the API",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/api/eventsApi.ts",
+      "line": 321,
+      "description": "Cart, checkout, ticket, and scan actions all stay behind the feature API. The screens ask for actions; they do not manually build HTTP calls."
+    },
+    {
+      "title": "Demo 1 - Seeded shop",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/api/mockEventsStore.ts",
+      "line": 84,
+      "description": "`buildMockEvents` seeds the demo catalog. That is why the app still feels complete even when the real backend is unavailable."
+    },
+    {
+      "title": "Demo 2 - When inventory really moves",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/api/mockEventsStore.ts",
+      "line": 258,
+      "description": "Tickets are issued after payment, which is when sold counts move in the mock store. So the basket and actual sold inventory are not the same thing."
+    },
+    {
+      "title": "Demo 3 - Realistic validation rules",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/api/mockEventsStore.ts",
+      "line": 458,
+      "description": "Mock validation checks wrong event, duplicate use, and the entry window. That makes the demo flow feel close to a real door-control product."
+    },
+    {
+      "title": "Delivery 1 - How I build and release the app",
+      "file": "ticketing-platform/apps/nightowl/package.json",
+      "line": 5,
+      "description": "My simple answer here is: I build the app through the app scripts, run tests, and use the same flow in CI. The point is to keep one clear path for local work and release prep instead of having a different process for every environment."
+    },
+    {
+      "title": "Delivery 2 - How I manage environments",
+      "file": "ticketing-platform/apps/nightowl/src/core/config/appConfig.ts",
+      "line": 24,
+      "description": "I manage environments through central config, not scattered constants. So things like API URL, timeouts, app env, E2E mode, and log behavior all come from one place and are easier to reason about."
+    },
+    {
+      "title": "Delivery 3 - How I handle secrets and config",
+      "file": "ticketing-platform/apps/nightowl/src/core/payments/stripeConfig.ts",
+      "line": 3,
+      "description": "The easy explanation is: the app reads only the public config it needs, like Stripe publishable values, while real secrets stay on the backend or in secure environment setup. That keeps the mobile app simpler and safer."
+    },
+    {
+      "title": "Delivery 4 - How I keep releases stable",
+      "file": "ticketing-platform/.github/workflows/nightowl-mobile-quality.yml",
+      "line": 19,
+      "description": "To keep releases stable, I want the same core checks every time: install, typecheck, and tests before code moves forward. It is a simple quality gate, but it catches a lot of avoidable breakage early."
+    },
+    {
+      "title": "Delivery 5 - How I monitor crashes and logs",
+      "file": "ticketing-platform/apps/nightowl/src/core/monitoring/errorReporter.ts",
+      "line": 11,
+      "description": "For crashes and logs, I route errors through one reporting path and one observability layer. The nice part is that when something breaks, there is already a place to capture the error, add context, and keep the logs useful."
+    },
+    {
+      "title": "Improve 1 - Split the main coordinator a bit more",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/hooks/useEventsExperience.ts",
+      "line": 24,
+      "description": "A nice next step would be splitting `useEventsExperience` into a few smaller domain hooks. Why: it already coordinates a lot, so breaking it up would make the code easier to grow and easier to test."
+    },
+    {
+      "title": "Improve 1a - Return grouped domains from `useEventsExperience`",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/hooks/useEventsExperience.ts",
+      "line": 295,
+      "description": "One very practical improvement would be returning grouped objects like `auth`, `discover`, `cart`, `checkout`, and `scanner` instead of one huge flat object. Why: the screen would be easier to read, and related state and actions would stay together."
+    },
+    {
+      "title": "Improve 1b - Keep `EventsScreen` even thinner",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/screens/EventsScreen.tsx",
+      "line": 25,
+      "description": "Another clean improvement would be letting `EventsScreen` stay more like a composition shell and moving more detail into the feature sections. Why: the file would be easier to scan, and the giant destructuring block would not need to know so much at once."
+    },
+    {
+      "title": "Improve 2 - Add stronger server-state caching",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/api/eventsApi.ts",
+      "line": 284,
+      "description": "Right now the app manages a lot of loaded data with plain hooks. A future improvement would be a stronger server-state layer for caching, refetching, and invalidation, especially as the app gets more screens."
+    },
+    {
+      "title": "Improve 3 - Refresh inventory more aggressively",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/hooks/useEventsExperience.ts",
+      "line": 225,
+      "description": "One good improvement would be refreshing event detail after cart changes, or deriving availability more directly from cart reservations. Why: the UI would feel more live and stock numbers would stay closer to what the shopper expects."
+    },
+    {
+      "title": "Improve 4 - Scale the event browsing UI",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/components/panels/DiscoverPanel.tsx",
+      "line": 54,
+      "description": "The current event rail is simple and nice for a smaller list. If the catalog grows a lot, I would move to a more scalable list pattern with virtualization and maybe pagination."
+    },
+    {
+      "title": "Improve 5 - Make checkout status richer",
+      "file": "ticketing-platform/apps/nightowl/src/features/checkout/hooks/useCheckoutExperience.ts",
+      "line": 81,
+      "description": "Checkout works, but the user feedback could go deeper. A future improvement would be richer states like waiting for webhook confirmation, payment recovery, or a clearer order timeline after checkout."
+    },
+    {
+      "title": "Improve 6 - Support more scanner inputs",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/utils.ts",
+      "line": 50,
+      "description": "Right now manual validation is best with a payload or ticket UUID. A nice improvement would be accepting the short visible ticket code too, because that would make staff fallback workflows more practical."
+    },
+    {
+      "title": "Improve 7 - Grow from demo observability to real monitoring",
+      "file": "ticketing-platform/apps/nightowl/src/core/monitoring/observability.ts",
+      "line": 49,
+      "description": "The app already has an observability shape, which is great. The next step would be plugging in a real provider for production errors, performance traces, and release health instead of mostly console-level behavior."
+    },
+    {
+      "title": "Improve 8 - Add stronger recovery UX",
+      "file": "ticketing-platform/apps/nightowl/src/core/errors/AppErrorBoundary.tsx",
+      "line": 19,
+      "description": "The app has a safety belt for render crashes, but recovery could be more helpful. For example, better retry paths, more user-friendly messages, and clearer fallbacks in critical flows would improve resilience."
+    },
+    {
+      "title": "Improve 9 - Harden environment setup even more",
+      "file": "ticketing-platform/apps/nightowl/src/core/config/appConfig.ts",
+      "line": 24,
+      "description": "Config is already centralized, which is a strong start. A next improvement would be clearer environment presets for local, staging, demo, and production so releases are easier to reason about."
+    },
+    {
+      "title": "Improve 10 - Make fallback mode even more explicit",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/api/eventsApi.ts",
+      "line": 262,
+      "description": "The fallback behavior is practical, but I would make it even more explicit for QA and demos. For example, a clearer visible switch or diagnostics panel could show exactly why the app is using mock mode."
+    },
+    {
+      "title": "Improve 11 - Expand the demo scenarios",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/api/mockEventsStore.ts",
+      "line": 84,
+      "description": "The seeded demo store is already useful, but it could cover more real-world cases like sold-out events, payment failures, canceled orders, and different scanner edge cases. That would make demos and tests even stronger."
+    },
+    {
+      "title": "Improve 12 - Add wallet export or native passes",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/components/panels/TicketsPanel.tsx",
+      "line": 20,
+      "description": "The ticket wallet works nicely inside the app, but a future improvement would be exporting to Apple Wallet or Google Wallet. Why: that would make the final customer experience feel more production-ready."
+    },
+    {
+      "title": "Improve 13 - Broaden automated quality gates",
+      "file": "ticketing-platform/.github/workflows/nightowl-mobile-quality.yml",
+      "line": 19,
+      "description": "The current mobile workflow covers install, typecheck, and tests. A strong next step would be adding more E2E coverage and possibly a release-build check in CI so quality stays tighter as the product grows."
+    },
+    {
+      "title": "Improve 14 - Harden release build testing",
+      "file": "ticketing-platform/apps/nightowl/e2e/README.md",
+      "line": 36,
+      "description": "The project already mentions release-mode Detox as a future hardening step. That would be worth adding more often, because debug success and release success do not always behave exactly the same."
+    },
+    {
+      "title": "Improve 15 - Keep the ending honest",
+      "file": "ticketing-platform/apps/nightowl/src/app/AppRoot.tsx",
+      "line": 7,
+      "description": "A nice way to close the tour is: the core flow is strong, but there is still room to improve scaling, observability, release maturity, and product polish. That usually lands well because it shows ownership without pretending the project is finished forever."
+    }
+  ]
+}

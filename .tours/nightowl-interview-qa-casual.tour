@@ -1,0 +1,421 @@
+{
+  "$schema": "https://aka.ms/codetour-schema",
+  "title": "Night Owl Interview Q&A Tour",
+  "description": "A simple, casual English Q&A CodeTour for interview prep. Most steps point to real code or repo files. Personal ownership answers are suggested prompts, so edit those to match what you actually built.",
+  "steps": [
+    {
+      "title": "Project 1 - What is Night Owl?",
+      "file": "ticketing-platform/apps/nightowl/src/app/AppRoot.tsx",
+      "line": 7,
+      "description": "Short answer: Night Owl is a mobile ticketing and event-commerce app. The main flow is login, browse events, add tickets or extras, pay, then use the ticket at the door."
+    },
+    {
+      "title": "Project 2 - What problem does it solve?",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/screens/EventsScreen.tsx",
+      "line": 119,
+      "description": "Short answer: it brings event discovery, cart, checkout, ticket wallet, and scanner validation into one flow. So it solves both the buyer side and the door-entry side."
+    },
+    {
+      "title": "Project 3 - Who are the main users?",
+      "file": "ticketing-platform/packages/authz/src/index.ts",
+      "line": 22,
+      "description": "Short answer: the main users are customers, staff, admins, and super admins. Customers buy and hold tickets, while staff and admin roles handle ops and validation."
+    },
+    {
+      "title": "Project 4 - What was your role?",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/hooks/useEventsExperience.ts",
+      "line": 24,
+      "description": "Suggested answer: I worked on the mobile product flow end to end, especially the experience layer that connects browse, cart, checkout, wallet, and scanner. Edit this to match your real scope."
+    },
+    {
+      "title": "Project 5 - Which parts did you personally build?",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/api/eventsApi.ts",
+      "line": 284,
+      "description": "Suggested answer: I would point to the areas I actually touched, for example the feature API layer, checkout flow, mock/demo mode, and scanner flow. Keep this honest and specific in the interview."
+    },
+    {
+      "title": "Architecture 1 - Why this architecture?",
+      "file": "ticketing-platform/README.md",
+      "line": 3,
+      "description": "Short answer: I chose a monorepo with clear service and package boundaries so mobile, backend, contracts, authz, and shared tooling can evolve together without living in one giant app."
+    },
+    {
+      "title": "Architecture 2 - Why React Native / Expo?",
+      "file": "ticketing-platform/apps/nightowl/package.json",
+      "line": 18,
+      "description": "Short answer: React Native gives one mobile codebase, and Expo keeps setup and native integration lighter. That is a practical fit for a product that needs to move fast on iOS and Android."
+    },
+    {
+      "title": "Architecture 3 - How is the app structured?",
+      "file": "ticketing-platform/apps/nightowl/src/app/AppProviders.tsx",
+      "line": 31,
+      "description": "Short answer: the app starts with providers and bootstrap, then the navigator, then feature modules like auth, events, checkout, tickets, and scanner."
+    },
+    {
+      "title": "Architecture 4 - Why organize features this way?",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/hooks/useEventsExperience.ts",
+      "line": 24,
+      "description": "Short answer: I grouped code by product feature instead of by technical layer only. That makes the app easier to reason about during product work because related UI, hooks, types, and APIs stay close."
+    },
+    {
+      "title": "Architecture 5 - How do frontend and backend communicate?",
+      "file": "ticketing-platform/apps/nightowl/src/core/api/httpClient.ts",
+      "line": 42,
+      "description": "Short answer: the mobile app talks through one shared HTTP client, then feature APIs like `eventsApi` turn raw responses into app models."
+    },
+    {
+      "title": "Architecture 6 - Why microservices or service separation?",
+      "file": "ticketing-platform/docker-compose.yml",
+      "line": 53,
+      "description": "Short answer: checkout, tickets, auth, catalog, cart, and orders all solve different business jobs. Splitting them keeps boundaries clearer and lets each service scale or change independently."
+    },
+    {
+      "title": "Architecture 7 - What if Night Owl grows much more?",
+      "file": "ticketing-platform/services/api-gateway/src/index.ts",
+      "line": 21,
+      "description": "Short answer: the current structure already gives room to grow because services are separated and routed through a gateway. If usage grows a lot, I would split bigger mobile coordinators and harden backend contracts and release automation further."
+    },
+    {
+      "title": "Code 1 - Why start the tour from this file?",
+      "file": "ticketing-platform/apps/nightowl/src/app/AppRoot.tsx",
+      "line": 7,
+      "description": "Short answer: I start from `AppRoot` because it shows the whole app shape in a few lines. It is the easiest way to explain the project from outside in."
+    },
+    {
+      "title": "Code 2 - Why is this file important?",
+      "file": "ticketing-platform/apps/nightowl/src/app/RootNavigator.tsx",
+      "line": 7,
+      "description": "Short answer: `RootNavigator` is important because it makes the first product decision, login or main app. It is a small file, but it controls the user's first branch."
+    },
+    {
+      "title": "Code 3 - How do providers, nav, auth, and features connect?",
+      "file": "ticketing-platform/apps/nightowl/src/app/AppProviders.tsx",
+      "line": 84,
+      "description": "Short answer: providers set up the global app context, auth decides if the user is signed in, navigation picks the right entry screen, then the feature modules take over."
+    },
+    {
+      "title": "Code 4 - How do you keep the code maintainable?",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/api/eventsApi.ts",
+      "line": 136,
+      "description": "Short answer: I keep transport shapes out of the UI. The mapping layer turns backend DTOs into app-friendly models before screens touch them."
+    },
+    {
+      "title": "Code 5 - How do you avoid tight coupling between features?",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/api/eventsApi.ts",
+      "line": 262,
+      "description": "Short answer: shared concerns like networking and fallback stay in the API layer, while feature hooks consume clean functions. That keeps screens from depending directly on backend details."
+    },
+    {
+      "title": "Code 6 - What would you refactor today?",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/hooks/useEventsExperience.ts",
+      "line": 24,
+      "description": "Short answer: `useEventsExperience` is a good candidate to split as the app grows. It works well for now, but it is already acting like a coordinator for many concerns."
+    },
+    {
+      "title": "State 1 - How do you manage app state?",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/hooks/useEventsExperience.ts",
+      "line": 24,
+      "description": "Short answer: I use React state and feature hooks for most app state, plus a small auth context for global session state. I kept it simple instead of adding a larger state library early."
+    },
+    {
+      "title": "State 2 - What is local state vs server state?",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/hooks/useEventsExperience.ts",
+      "line": 26,
+      "description": "Short answer: local state is things like active tab, search, draft quantities, banners, and selected payment method. Server state is events, cart, orders, tickets, and scan results loaded through the APIs."
+    },
+    {
+      "title": "State 3 - How do you handle authentication state?",
+      "file": "ticketing-platform/apps/nightowl/src/core/auth/AuthProvider.tsx",
+      "line": 30,
+      "description": "Short answer: auth lives in one provider. It hydrates from secure storage on startup, exposes `signIn` and `signOut`, and keeps the shared HTTP client in sync with the current token."
+    },
+    {
+      "title": "State 4 - How do you handle persisted auth safely?",
+      "file": "ticketing-platform/apps/nightowl/src/core/auth/authStorage.ts",
+      "line": 23,
+      "description": "Short answer: storage is treated as untrusted input. We read it, parse it, validate the shape, and clear it if it is malformed."
+    },
+    {
+      "title": "State 5 - How do you handle cart and checkout state?",
+      "file": "ticketing-platform/apps/nightowl/src/features/checkout/hooks/useCheckoutExperience.ts",
+      "line": 30,
+      "description": "Short answer: cart state lives in the main experience hook, and checkout logic lives in its own hook. That keeps payment orchestration separate from browsing UI."
+    },
+    {
+      "title": "State 6 - How do you handle loading states?",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/hooks/useEventsExperience.ts",
+      "line": 152,
+      "description": "Short answer: startup bootstraps events, cart, and tickets together, then the screen renders loaders or the real content based on that state."
+    },
+    {
+      "title": "State 7 - How do you handle empty and error states?",
+      "file": "ticketing-platform/apps/nightowl/src/core/errors/AppErrorBoundary.tsx",
+      "line": 19,
+      "description": "Short answer: empty states are explicit in the feature panels, normal API errors become banners, and render crashes still have a top-level error boundary."
+    },
+    {
+      "title": "API 1 - How does the app talk to the backend?",
+      "file": "ticketing-platform/apps/nightowl/src/core/api/httpClient.ts",
+      "line": 42,
+      "description": "Short answer: every request goes through one HTTP client. That keeps auth headers, timeouts, retries, and request IDs consistent."
+    },
+    {
+      "title": "API 2 - What APIs exist in Night Owl?",
+      "file": "ticketing-platform/README.md",
+      "line": 85,
+      "description": "Short answer: the main service areas are auth, catalog, cart, orders, checkout, tickets, admin, incidents, analytics, and notifications."
+    },
+    {
+      "title": "API 3 - Why use this API design?",
+      "file": "ticketing-platform/packages/contracts/openapi/checkout.yaml",
+      "line": 1,
+      "description": "Short answer: I like having explicit service contracts, even if they start small. It makes mobile and backend collaboration cleaner and keeps payload shapes more intentional."
+    },
+    {
+      "title": "API 4 - How are errors handled between app and backend?",
+      "file": "ticketing-platform/packages/shared/src/app.ts",
+      "line": 51,
+      "description": "Short answer: backend services normalize errors in one place, and the mobile app turns unknown failures into `AppError` objects instead of leaking raw exceptions into the UI."
+    },
+    {
+      "title": "API 5 - How do you secure endpoints?",
+      "file": "ticketing-platform/packages/shared/src/auth.ts",
+      "line": 62,
+      "description": "Short answer: services use `authGuard` to verify the JWT, require access tokens, and optionally enforce a permission before the route runs."
+    },
+    {
+      "title": "API 6 - How do roles and permissions work?",
+      "file": "ticketing-platform/packages/authz/src/index.ts",
+      "line": 22,
+      "description": "Short answer: RBAC lives in one shared package. Roles map to permissions like `cart:manage`, `orders:own`, and `tickets:validate`, so policy stays centralized."
+    },
+    {
+      "title": "Payments 1 - How do payments work end to end?",
+      "file": "ticketing-platform/services/orders/src/index.ts",
+      "line": 16,
+      "description": "Short answer: first we turn the cart into an order and reserve inventory. Then checkout creates or reuses a Stripe payment intent, and the webhook finishes payment and ticket issuance."
+    },
+    {
+      "title": "Payments 2 - How does checkout work?",
+      "file": "ticketing-platform/apps/nightowl/src/features/checkout/hooks/useCheckoutExperience.ts",
+      "line": 81,
+      "description": "Short answer: the checkout hook creates an order if needed, asks for a payment intent, opens Stripe when configured, and refreshes tickets after success."
+    },
+    {
+      "title": "Payments 3 - How is Stripe integrated on mobile?",
+      "file": "ticketing-platform/apps/nightowl/src/core/payments/stripeConfig.ts",
+      "line": 3,
+      "description": "Short answer: the app reads Stripe publishable config from env and passes it through the app-level Stripe provider. Payment method choice stays in the checkout UI."
+    },
+    {
+      "title": "Payments 4 - How is Stripe wired into the native app?",
+      "file": "ticketing-platform/apps/nightowl/app.config.ts",
+      "line": 43,
+      "description": "Short answer: `app.config.ts` injects Stripe plugin options like the merchant identifier and URL scheme. That is how the native payment flow is configured for Expo builds."
+    },
+    {
+      "title": "Payments 5 - What happens after payment succeeds?",
+      "file": "ticketing-platform/services/checkout/src/index.ts",
+      "line": 208,
+      "description": "Short answer: the Stripe webhook marks the order as paid inside a transaction, then continues the fulfillment work from there."
+    },
+    {
+      "title": "Payments 6 - How are tickets issued?",
+      "file": "ticketing-platform/services/checkout/src/index.ts",
+      "line": 269,
+      "description": "Short answer: after a paid webhook, the service inserts one ticket row per purchased ticket quantity and records analytics events too."
+    },
+    {
+      "title": "Payments 7 - How do you avoid duplicate ticket creation?",
+      "file": "ticketing-platform/services/checkout/src/index.ts",
+      "line": 77,
+      "description": "Short answer: there are two guards. Stripe payment-intent creation uses `idempotencyKey: order.id`, and webhook fulfillment only updates orders that are still `pending`."
+    },
+    {
+      "title": "Tickets 1 - How does the buyer see tickets after payment?",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/components/panels/TicketsPanel.tsx",
+      "line": 20,
+      "description": "Short answer: paid tickets show up in the wallet view with event details, status, and a door payload."
+    },
+    {
+      "title": "Tickets 2 - How does scanner validation work at the entrance?",
+      "file": "ticketing-platform/services/tickets/src/index.ts",
+      "line": 125,
+      "description": "Short answer: the scanner route checks event match, ticket status, and the allowed entry window before marking the ticket as used."
+    },
+    {
+      "title": "Tickets 3 - How do you avoid duplicate scans?",
+      "file": "ticketing-platform/services/tickets/src/index.ts",
+      "line": 162,
+      "description": "Short answer: a ticket must still be `valid` to pass validation. Once it is marked `used`, later scans are rejected."
+    },
+    {
+      "title": "Tickets 4 - How do you keep the mobile scanner practical?",
+      "file": "ticketing-platform/apps/nightowl/src/features/scanner/hooks/useScannerExperience.ts",
+      "line": 124,
+      "description": "Short answer: after one camera read, the scanner pauses. That prevents accidental duplicate validations from the mobile side too."
+    },
+    {
+      "title": "Quality 1 - How do you test this app?",
+      "file": "ticketing-platform/apps/nightowl/package.json",
+      "line": 5,
+      "description": "Short answer: the app has both unit-style tests with Vitest and E2E coverage with Detox. The repo also has monorepo-level scripts for build, typecheck, and test."
+    },
+    {
+      "title": "Quality 2 - What do you test with unit tests?",
+      "file": "ticketing-platform/apps/nightowl/src/core/api/httpClient.test.ts",
+      "line": 31,
+      "description": "Short answer: unit tests cover low-level logic like the HTTP client, retries, auth storage, config parsing, and mock store behavior."
+    },
+    {
+      "title": "Quality 3 - What do you test with integration or E2E tests?",
+      "file": "ticketing-platform/apps/nightowl/e2e/nightowl-flow.e2e.js",
+      "line": 8,
+      "description": "Short answer: E2E tests cover the real user journey, like signing in, adding a ticket, checking out, seeing it in the wallet, and opening scanner tools."
+    },
+    {
+      "title": "Quality 4 - How would you test checkout and ticket validation?",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/api/mockEventsStore.test.ts",
+      "line": 35,
+      "description": "Short answer: I test business rules like scan windows in focused tests, then cover the full buy-and-see-ticket path with Detox."
+    },
+    {
+      "title": "Quality 5 - How do you ensure code quality before merge?",
+      "file": "ticketing-platform/.github/workflows/nightowl-mobile-quality.yml",
+      "line": 19,
+      "description": "Short answer: the current workflow runs install, typecheck, and tests for the Night Owl app on push and pull request."
+    },
+    {
+      "title": "Quality 6 - How do you avoid regressions?",
+      "file": "ticketing-platform/apps/nightowl/e2e/README.md",
+      "line": 3,
+      "description": "Short answer: deterministic demo mode helps a lot here. It lets the main flow be tested repeatedly without depending on live backend services or real Stripe UI."
+    },
+    {
+      "title": "Performance 1 - What performance problems did you face?",
+      "file": "ticketing-platform/apps/nightowl/src/app/RootNavigator.tsx",
+      "line": 10,
+      "description": "Suggested answer: the main early concern was startup smoothness, especially around auth hydration and initial data loading. I wanted to avoid janky screen flashes and over-eager fetching."
+    },
+    {
+      "title": "Performance 2 - How do you optimize app startup?",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/hooks/useEventsExperience.ts",
+      "line": 152,
+      "description": "Short answer: the app bootstraps core data together, uses small loading states, and delays deeper event detail fetching until the user actually needs it."
+    },
+    {
+      "title": "Performance 3 - How do you handle large event lists?",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/hooks/useEventsExperience.ts",
+      "line": 39,
+      "description": "Short answer: search uses `useDeferredValue`, and event detail is loaded lazily. That keeps the main browsing path lighter."
+    },
+    {
+      "title": "Performance 4 - How do you reduce unnecessary re-renders?",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/hooks/useEventsExperience.ts",
+      "line": 76,
+      "description": "Short answer: I use tools like `startTransition` and deferred values where they help. The idea is to keep urgent UI updates responsive without over-optimizing everything."
+    },
+    {
+      "title": "Performance 5 - What would you monitor in production?",
+      "file": "ticketing-platform/apps/nightowl/src/core/monitoring/observability.ts",
+      "line": 16,
+      "description": "Short answer: I would watch crashes, API failures, payment errors, slow startup, and scanner failures. The app already has a small observability adapter and logging path to build on."
+    },
+    {
+      "title": "Delivery 1 - How do you build and release the app?",
+      "file": "ticketing-platform/package.json",
+      "line": 6,
+      "description": "Short answer: the repo already has build, test, migration, and mobile E2E commands. For the app itself, Expo and Detox scripts cover local build and quality flow."
+    },
+    {
+      "title": "Delivery 2 - How do you manage environments?",
+      "file": "ticketing-platform/apps/nightowl/src/core/config/appConfig.ts",
+      "line": 24,
+      "description": "Short answer: environment values like API URL, timeout, retries, app env, and observability provider are read centrally from public env config."
+    },
+    {
+      "title": "Delivery 3 - How do you handle secrets and config?",
+      "file": "ticketing-platform/docker-compose.yml",
+      "line": 123,
+      "description": "Short answer: backend services read secrets like Stripe and JWT settings from env, while the mobile app reads only the public config it actually needs."
+    },
+    {
+      "title": "Delivery 4 - How do you ensure stable releases?",
+      "file": "ticketing-platform/apps/nightowl/e2e/README.md",
+      "line": 36,
+      "description": "Short answer: today the repo is stronger on quality gates than full mobile release automation. A fair answer is that the next step would be hardening CI with release builds and a more complete release pipeline."
+    },
+    {
+      "title": "Delivery 5 - How do you monitor crashes and logs?",
+      "file": "ticketing-platform/apps/nightowl/src/core/monitoring/errorReporter.ts",
+      "line": 11,
+      "description": "Short answer: mobile errors go through `reportError`, then into observability and logging. On the backend, each service also exposes health, metrics, and structured logs."
+    },
+    {
+      "title": "Reflection 1 - How did you work with product, design, and backend?",
+      "file": "ticketing-platform/packages/contracts/openapi/checkout.yaml",
+      "line": 1,
+      "description": "Suggested answer: I used clear contracts and feature boundaries so backend and mobile could align on payloads, while product and design could work against one consistent flow."
+    },
+    {
+      "title": "Reflection 2 - How did you make technical decisions?",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/api/eventsApi.ts",
+      "line": 262,
+      "description": "Suggested answer: I usually optimized for a clear user flow first, then picked the smallest architecture that still gave good boundaries. `runWithFallback` is a good example of pragmatic product-first engineering."
+    },
+    {
+      "title": "Reflection 3 - Tell us about a difficult challenge",
+      "file": "ticketing-platform/apps/nightowl/src/features/checkout/hooks/useCheckoutExperience.ts",
+      "line": 109,
+      "description": "Suggested answer: a tricky part was making checkout and ticketing feel real in demo mode without depending on live Stripe or live services. That led to a deterministic mock path that still preserves the product story."
+    },
+    {
+      "title": "Reflection 4 - Tell us about a disagreement and how you handled it",
+      "file": "ticketing-platform/packages/authz/src/index.ts",
+      "line": 22,
+      "description": "Suggested answer: talk about a real example if you have one. A safe angle here is discussing boundary decisions like permissions, service ownership, or where a piece of logic should live, then explain how you aligned on a clear rule."
+    },
+    {
+      "title": "Reflection 5 - What are you most proud of?",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/screens/EventsScreen.tsx",
+      "line": 24,
+      "description": "Suggested answer: I am most proud that the product feels like one joined-up flow, from login to event discovery to checkout to wallet to door validation."
+    },
+    {
+      "title": "Reflection 6 - What would you improve next?",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/hooks/useEventsExperience.ts",
+      "line": 24,
+      "description": "Short answer: next I would split the bigger coordinator hooks, add stronger release automation, and harden the app for larger catalogs and more live operational workflows."
+    },
+    {
+      "title": "Reflection 7 - Why this approach and not another one?",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/hooks/useEventsExperience.ts",
+      "line": 24,
+      "description": "Short answer: I chose feature hooks and focused boundaries instead of bringing in a larger state framework too early. It kept the codebase smaller and easier to move in."
+    },
+    {
+      "title": "Reflection 8 - What were the trade-offs?",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/api/eventsApi.ts",
+      "line": 284,
+      "description": "Short answer: the trade-off is that a few files became central, like `eventsApi` and `useEventsExperience`. That bought speed and clarity early, but it creates obvious future split points."
+    },
+    {
+      "title": "Reflection 9 - What would you do differently today?",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/hooks/useEventsExperience.ts",
+      "line": 24,
+      "description": "Short answer: today I would probably break the main coordinator into smaller domain hooks sooner and invest earlier in release automation and stronger contract testing."
+    },
+    {
+      "title": "Reflection 10 - Which part is still weak or unfinished?",
+      "file": "ticketing-platform/apps/nightowl/e2e/README.md",
+      "line": 36,
+      "description": "Short answer: the quality story is decent, but the release story is still lighter than I would want for a mature production app. That is a fair area to call out honestly."
+    },
+    {
+      "title": "Reflection 11 - Where did you choose pragmatism over perfection?",
+      "file": "ticketing-platform/apps/nightowl/src/features/events/api/mockEventsStore.ts",
+      "line": 84,
+      "description": "Short answer: the seeded mock store is the clearest example. It is not a perfect substitute for live services, but it gives a stable demo, testing, and interview path without blocking product flow."
+    }
+  ]
+}

@@ -63,10 +63,13 @@ export function useCheckoutExperience({
 
       setIsPlatformWalletSupported(supported);
       if (supported) {
-        setSelectedPaymentMethod('wallet');
+        setSelectedPaymentMethod(Platform.OS === 'ios' ? 'apple_pay' : 'google_pay');
+      } else {
+        setSelectedPaymentMethod('card');
       }
     } catch {
       setIsPlatformWalletSupported(false);
+      setSelectedPaymentMethod('card');
     }
   }
 
@@ -132,7 +135,7 @@ export function useCheckoutExperience({
                 customerEphemeralKeySecret: nextPaymentIntent.customerEphemeralKeySecret,
                 returnURL: STRIPE_RETURN_URL,
                 applePay:
-                  selectedPaymentMethod === 'wallet'
+                  selectedPaymentMethod === 'apple_pay'
                     ? {
                         merchantCountryCode: 'US',
                         cartItems: [
@@ -145,7 +148,7 @@ export function useCheckoutExperience({
                       }
                     : undefined,
                 googlePay:
-                  selectedPaymentMethod === 'wallet'
+                  selectedPaymentMethod === 'google_pay'
                     ? {
                         merchantCountryCode: 'US',
                         currencyCode: order.currency.toUpperCase(),
@@ -158,7 +161,7 @@ export function useCheckoutExperience({
                 paymentIntentClientSecret: nextPaymentIntent.clientSecret,
                 returnURL: STRIPE_RETURN_URL,
                 applePay:
-                  selectedPaymentMethod === 'wallet'
+                  selectedPaymentMethod === 'apple_pay'
                     ? {
                         merchantCountryCode: 'US',
                         cartItems: [
@@ -171,7 +174,7 @@ export function useCheckoutExperience({
                       }
                     : undefined,
                 googlePay:
-                  selectedPaymentMethod === 'wallet'
+                  selectedPaymentMethod === 'google_pay'
                     ? {
                         merchantCountryCode: 'US',
                         currencyCode: order.currency.toUpperCase(),
