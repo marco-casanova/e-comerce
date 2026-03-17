@@ -38,6 +38,18 @@ function isoDate(date: string, time: string) {
   return `${date}T${time}:00.000Z`;
 }
 
+function isoLocalDate(referenceDate: Date, dayOffset: number, hours: number, minutes = 0) {
+  return new Date(
+    referenceDate.getFullYear(),
+    referenceDate.getMonth(),
+    referenceDate.getDate() + dayOffset,
+    hours,
+    minutes,
+    0,
+    0,
+  ).toISOString();
+}
+
 function buildEntryWindow(startsAt: string, endsAt: string | null) {
   const eventStartsAt = new Date(startsAt);
   const eventEndsAt = endsAt ? new Date(endsAt) : null;
@@ -82,13 +94,14 @@ function createAddOn(eventId: string, name: string, category: string, priceCents
 }
 
 function buildMockEvents() {
+  const referenceDate = new Date();
   const eventBlueprints = [
     {
       title: 'Warehouse Pulse',
       description: 'A late-night industrial set with laser tunnels, hard groove rooms and an all-night coffee bar.',
       venue: 'Black Lantern Depot',
-      startsAt: isoDate('2026-03-17', '08:00'),
-      endsAt: isoDate('2026-03-18', '01:00'),
+      startsAt: isoLocalDate(referenceDate, 0, 9),
+      endsAt: isoLocalDate(referenceDate, 1, 2),
       capacity: 420,
       ticketCopy: 'Fast-lane entry with warehouse floor access.',
       merchCopy: 'Heavy cotton black tee with reflective lineup print.',

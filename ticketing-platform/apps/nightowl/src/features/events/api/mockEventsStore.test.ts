@@ -23,20 +23,25 @@ describe('mockEventsStore', () => {
     vi.useRealTimers();
   });
 
-  it('uses the updated Warehouse Pulse dates', async () => {
+  it('uses todays Warehouse Pulse dates for demos', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-03-17T12:00:00.000Z'));
+
     const { listMockEvents } = await loadMockStore();
     const warehousePulse = listMockEvents()[0];
 
     expect(warehousePulse.title).toBe('Warehouse Pulse');
-    expect(warehousePulse.startsAt).toBe('2026-03-17T08:00:00.000Z');
-    expect(warehousePulse.endsAt).toBe('2026-03-18T01:00:00.000Z');
+    expect(warehousePulse.startsAt).toBe(new Date(2026, 2, 17, 9, 0, 0, 0).toISOString());
+    expect(warehousePulse.endsAt).toBe(new Date(2026, 2, 18, 2, 0, 0, 0).toISOString());
   });
 
   it('rejects scans before the entry window opens', async () => {
     vi.useFakeTimers();
-    vi.setSystemTime(new Date('2026-03-17T05:59:00.000Z'));
+    vi.setSystemTime(new Date(2026, 2, 17, 6, 59, 0, 0));
 
     const { event, store, ticket } = await issueWarehousePulseTicket();
+    const expectedWindowOpensAt = new Date(2026, 2, 17, 7, 0, 0, 0).toISOString();
+    const expectedWindowClosesAt = new Date(2026, 2, 18, 3, 0, 0, 0).toISOString();
 
     try {
       store.validateMockTicketScan(ticket.id, event.id);
@@ -47,9 +52,9 @@ describe('mockEventsStore', () => {
         code: 'SCAN_TOO_EARLY',
         statusCode: 409,
         details: {
-          windowOpensAt: '2026-03-17T06:00:00.000Z',
-          windowClosesAt: '2026-03-18T02:00:00.000Z',
-          scanTimestamp: '2026-03-17T05:59:00.000Z',
+          windowOpensAt: expectedWindowOpensAt,
+          windowClosesAt: expectedWindowClosesAt,
+          scanTimestamp: new Date(2026, 2, 17, 6, 59, 0, 0).toISOString(),
         },
       });
     }
@@ -57,14 +62,14 @@ describe('mockEventsStore', () => {
 
   it('uses the event schedule to calculate a successful scan window', async () => {
     vi.useFakeTimers();
-    vi.setSystemTime(new Date('2026-03-17T10:00:00.000Z'));
+    vi.setSystemTime(new Date(2026, 2, 17, 10, 0, 0, 0));
 
     const { event, store, ticket } = await issueWarehousePulseTicket();
     const result = store.validateMockTicketScan(ticket.id, event.id);
 
     expect(result.validated).toBe(true);
-    expect(result.ticket.windowOpensAt).toBe('2026-03-17T06:00:00.000Z');
-    expect(result.ticket.windowClosesAt).toBe('2026-03-18T02:00:00.000Z');
+    expect(result.ticket.windowOpensAt).toBe(new Date(2026, 2, 17, 7, 0, 0, 0).toISOString());
+    expect(result.ticket.windowClosesAt).toBe(new Date(2026, 2, 18, 3, 0, 0, 0).toISOString());
     expect(result.ticket.status).toBe('used');
   });
 });
